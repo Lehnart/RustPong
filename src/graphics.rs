@@ -5,13 +5,13 @@ use sdl2::render::WindowCanvas;
 
 use crate::logic::{BALL_DIM, Logic, RACKET_HEIGHT, RACKET_WIDTH};
 
-pub(crate) struct Window {
-    pub(crate) canvas: WindowCanvas,
-    pub(crate) event_pump: EventPump,
+pub struct Window {
+    pub canvas: WindowCanvas,
+    pub event_pump: EventPump,
 }
 
 impl Window {
-    pub(crate) fn new(width: u32, height: u32) -> Window {
+    pub fn new(width: u32, height: u32) -> Window {
         let sdl_context = sdl2::init().unwrap();
 
         let video_subsystem = sdl_context.video().unwrap();
@@ -30,7 +30,7 @@ impl Window {
     }
 }
 
-pub(crate) struct Graphics {
+pub struct Graphics {
     width: u32,
     height: u32,
 
@@ -40,7 +40,7 @@ pub(crate) struct Graphics {
 }
 
 impl Graphics {
-    pub(crate) fn new(canvas: &WindowCanvas) -> Graphics {
+    pub fn new(canvas: &WindowCanvas) -> Graphics {
         let dim = canvas.output_size().unwrap();
 
         Graphics {
@@ -52,24 +52,24 @@ impl Graphics {
         }
     }
 
-    pub(crate) fn update(&mut self, logic: &Logic) {
-        self.left_racket.y = (logic.left_racket_y * self.height as f32) as i32;
-        self.left_racket.x = (logic.left_racket_x * self.width as f32) as i32;
+    pub fn update(&mut self, logic: &Logic) {
+        self.left_racket.y = (logic.left_racket().y() * self.height as f32) as i32;
+        self.left_racket.x = (logic.left_racket().x() * self.width as f32) as i32;
         self.left_racket.set_width((RACKET_WIDTH * self.width as f32) as u32);
         self.left_racket.set_height((RACKET_HEIGHT * self.height as f32) as u32);
 
-        self.right_racket.y = (logic.right_racket_y * self.height as f32) as i32;
-        self.right_racket.x = (logic.right_racket_x * self.width as f32) as i32;
+        self.right_racket.y = (logic.right_racket().y() * self.height as f32) as i32;
+        self.right_racket.x = (logic.right_racket().x() * self.width as f32) as i32;
         self.right_racket.set_width((RACKET_WIDTH * self.width as f32) as u32);
         self.right_racket.set_height((RACKET_HEIGHT * self.height as f32) as u32);
 
-        self.ball.x = (logic.ball_x * self.width as f32) as i32;
-        self.ball.y = (logic.ball_y * self.height as f32) as i32;
+        self.ball.x = (logic.ball().x() * self.width as f32) as i32;
+        self.ball.y = (logic.ball().y() * self.height as f32) as i32;
         self.ball.set_width((BALL_DIM * self.width as f32) as u32);
         self.ball.set_height((BALL_DIM * self.height as f32) as u32);
     }
 
-    pub(crate) fn draw(&self, canvas: &mut WindowCanvas) {
+    pub fn draw(&self, canvas: &mut WindowCanvas) {
         canvas.set_draw_color(Color::BLACK);
         canvas.clear();
 

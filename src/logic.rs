@@ -1,70 +1,114 @@
-pub(crate) enum Racket {
-    Left,
-    Right,
+pub const RACKET_HEIGHT: f32 = 0.10;
+pub const RACKET_WIDTH: f32 = 0.01;
+pub const BALL_DIM: f32 = 0.01;
+const RACKET_SPEED: f32 = 0.50;
+
+pub struct Racket {
+    x: f32,
+    y: f32,
+    vy: f32,
 }
 
-const RACKET_SPEED: f32 = 0.50;
-pub(crate) const RACKET_HEIGHT: f32 = 0.10;
-pub(crate) const RACKET_WIDTH: f32 = 0.01;
-pub(crate) const BALL_DIM: f32 = 0.01;
+impl Racket {
+    fn new(x: f32, y: f32) -> Racket {
+        Racket {
+            x,
+            y,
+            vy: 0.,
+        }
+    }
 
-pub(crate) struct Logic {
-    pub(crate) left_racket_x: f32,
-    pub(crate) left_racket_y: f32,
-    left_racket_vy: f32,
-    pub(crate) right_racket_x: f32,
-    pub(crate) right_racket_y: f32,
-    right_racket_vy: f32,
-    pub(crate) ball_x: f32,
-    pub(crate) ball_y: f32,
+    pub fn x(&self) -> f32 {
+        self.x
+    }
+    pub fn y(&self) -> f32 {
+        self.y
+    }
+
+    fn update(&mut self, dt: f32) {
+        self.y += self.vy * dt;
+        if self.y < 0. {
+            self.y = 0.;
+        } else if self.y + RACKET_HEIGHT > 1. {
+            self.y = 1. - RACKET_HEIGHT;
+        }
+    }
+
+
+    pub fn accelerate(&mut self) {
+        self.vy += RACKET_SPEED
+    }
+
+    pub fn decelerate(&mut self) {
+        self.vy -= RACKET_SPEED
+    }
+}
+
+pub struct Ball {
+    x: f32,
+    y: f32,
+}
+
+impl Ball {
+    fn new(x: f32, y: f32) -> Ball {
+        Ball { x, y }
+    }
+
+    pub fn x(&self) -> f32 {
+        self.x
+    }
+    pub fn y(&self) -> f32 {
+        self.y
+    }
+}
+
+pub struct Logic {
+    left_racket: Racket,
+    right_racket: Racket,
+    ball: Ball,
+    is_over: bool
 }
 
 impl Logic {
-    pub(crate) fn new() -> Logic {
+    pub fn new() -> Logic {
         Logic {
-            left_racket_x: 0.01,
-            left_racket_y: 0.5,
-            left_racket_vy: 0.,
-            right_racket_x: 1. - RACKET_WIDTH - 0.01,
-            right_racket_y: 0.5,
-            right_racket_vy: 0.,
-            ball_x: 0.5 - (BALL_DIM / 2.),
-            ball_y: 0.5 - (BALL_DIM / 2.),
+            left_racket: Racket::new(0.01, 0.5 - (RACKET_HEIGHT / 2.)),
+            right_racket: Racket::new(1. - RACKET_WIDTH - 0.01, 0.5 - (RACKET_HEIGHT / 2.)),
+            ball: Ball::new(0.5 - (BALL_DIM / 2.), 0.5 - (BALL_DIM / 2.)),
+            is_over : false
         }
     }
 
-    pub(crate) fn update(&mut self, dt: f32) {
-        self.left_racket_y += self.left_racket_vy * dt;
-        self.right_racket_y += self.right_racket_vy * dt;
-
-        if self.left_racket_y < 0. {
-            self.left_racket_y = 0.;
-        }
-
-        if self.left_racket_y + RACKET_HEIGHT > 1. {
-            self.left_racket_y = 1. - RACKET_HEIGHT;
-        }
-
-        if self.right_racket_y < 0. {
-            self.right_racket_y = 0.;
-        }
-
-        if self.right_racket_y + RACKET_HEIGHT > 1. {
-            self.right_racket_y = 1. - RACKET_HEIGHT;
-        }
+    pub fn update(&mut self, dt: f32) {
+        self.left_racket.update(dt);
+        self.right_racket.update(dt);
     }
 
-    pub(crate) fn accelerate(&mut self, racket: Racket) {
-        match racket {
-            Racket::Left => self.left_racket_vy += RACKET_SPEED,
-            Racket::Right => self.right_racket_vy += RACKET_SPEED,
-        }
+    pub fn left_racket(&self) -> &Racket {
+        &self.left_racket
     }
 
-    pub(crate) fn decelerate(&mut self, racket: Racket) {
-        match racket {
-            Racket::Left => self.left_racket_vy -= RACKET_SPEED,
-            Racket::Right => self.right_racket_vy -= RACKET_SPEED,
-        }
+    pub fn right_racket(&self) -> &Racket {
+        &self.right_racket
+    }
+
+    pub fn m_left_racket(&mut self) -> &mut Racket {
+        &mut self.left_racket
+    }
+
+    pub fn m_right_racket(&mut self) -> &mut Racket {
+        &mut self.right_racket
+    }
+
+    pub fn ball(&self) -> &Ball {
+        &self.ball
+    }
+
+    pub fn over(&mut self) {
+        self.is_over = true;
+    }
+
+    pub fn is_over(&self) -> bool {
+        self.is_over
     }
 }
