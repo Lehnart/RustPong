@@ -35,9 +35,9 @@ pub struct Graphics {
     width: u32,
     height: u32,
 
-    left_racket: Rect,
-    right_racket: Rect,
-    ball: Rect,
+    left_racket: Sprite,
+    right_racket: Sprite,
+    ball: Sprite,
 }
 
 impl Graphics {
@@ -47,23 +47,16 @@ impl Graphics {
         Graphics {
             width: dim.0,
             height: dim.1,
-            left_racket: Rect::new(0,0,1,1,),
-            right_racket: Rect::new(0,0,1,1,),
-            ball: Rect::new(0,0,1,1,),
+            left_racket: Sprite::new(0,0,1,1,),
+            right_racket: Sprite::new(0,0,1,1,),
+            ball: Sprite::new(0,0,1,1,),
         }
     }
 
     pub fn update(&mut self, logic: &Logic) {
-        Graphics::update_rect(&mut self.left_racket, &logic.left_racket().as_rect(), self.width, self.height);
-        Graphics::update_rect(&mut self.right_racket, &logic.right_racket().as_rect(), self.width, self.height);
-        Graphics::update_rect(&mut self.ball, &logic.ball().as_rect(), self.width, self.height);
-    }
-
-    fn update_rect(graphic_rect : &mut Rect, logic_rect: &logic::Rect, w : u32, h: u32){
-        graphic_rect.y = (logic_rect.y * h as f32) as i32;
-        graphic_rect.x = (logic_rect.x * w as f32) as i32;
-        graphic_rect.set_width( (logic_rect.w * w as f32) as u32);
-        graphic_rect.set_height( (logic_rect.h * h  as f32) as u32);
+        self.left_racket.update(logic.left_racket().as_rect(), self.width, self.height);
+        self.right_racket.update(logic.right_racket().as_rect(), self.width, self.height);
+        self.ball.update(logic.ball().as_rect(), self.width, self.height);
     }
 
     pub fn draw(&self, canvas: &mut WindowCanvas) {
@@ -71,9 +64,29 @@ impl Graphics {
         canvas.clear();
 
         canvas.set_draw_color(Color::WHITE);
-        canvas.fill_rect(self.left_racket).unwrap();
-        canvas.fill_rect(self.right_racket).unwrap();
-        canvas.fill_rect(self.ball).unwrap();
+        canvas.fill_rect(self.left_racket.rect).unwrap();
+        canvas.fill_rect(self.right_racket.rect).unwrap();
+        canvas.fill_rect(self.ball.rect).unwrap();
         canvas.present();
     }
+}
+
+struct Sprite{
+    rect : Rect
+}
+
+impl Sprite {
+    fn new(x:i32,y:i32,w:u32,h:u32) -> Sprite {
+        Sprite{
+            rect : Rect::new(x,y,w,h)
+        }
+    }
+
+    fn update( &mut self, logic_rect: logic::Rect, canvas_width : u32, canvas_height: u32){
+        self.rect.y = (logic_rect.y * canvas_height as f32) as i32;
+        self.rect.x = (logic_rect.x * canvas_width as f32) as i32;
+        self.rect.set_width( (logic_rect.w * canvas_width as f32) as u32);
+        self.rect.set_height( (logic_rect.h * canvas_height  as f32) as u32);
+    }
+
 }
