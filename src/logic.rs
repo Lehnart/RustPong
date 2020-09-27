@@ -3,6 +3,18 @@ pub const RACKET_WIDTH: f32 = 0.01;
 pub const BALL_DIM: f32 = 0.01;
 const RACKET_SPEED: f32 = 0.50;
 
+pub struct Rect{
+    pub x : f32,
+    pub y : f32,
+    pub w : f32,
+    pub h : f32
+}
+
+pub trait AsRect {
+    fn as_rect(&self) -> Rect;
+}
+
+
 pub struct Racket {
     x: f32,
     y: f32,
@@ -16,13 +28,6 @@ impl Racket {
             y,
             vy: 0.,
         }
-    }
-
-    pub fn x(&self) -> f32 {
-        self.x
-    }
-    pub fn y(&self) -> f32 {
-        self.y
     }
 
     fn update(&mut self, dt: f32) {
@@ -44,6 +49,17 @@ impl Racket {
     }
 }
 
+impl AsRect for Racket{
+    fn as_rect(&self) -> Rect {
+        Rect{
+            x: self.x,
+            y: self.y,
+            w: RACKET_WIDTH,
+            h: RACKET_HEIGHT
+        }
+    }
+}
+
 pub struct Ball {
     x: f32,
     y: f32,
@@ -53,12 +69,16 @@ impl Ball {
     fn new(x: f32, y: f32) -> Ball {
         Ball { x, y }
     }
+}
 
-    pub fn x(&self) -> f32 {
-        self.x
-    }
-    pub fn y(&self) -> f32 {
-        self.y
+impl AsRect for Ball{
+    fn as_rect(&self) -> Rect {
+        Rect{
+            x: self.x,
+            y: self.y,
+            w: BALL_DIM,
+            h: BALL_DIM
+        }
     }
 }
 

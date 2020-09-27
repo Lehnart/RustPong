@@ -3,7 +3,8 @@ use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::WindowCanvas;
 
-use crate::logic::{BALL_DIM, Logic, RACKET_HEIGHT, RACKET_WIDTH};
+use crate::logic::{Logic, AsRect};
+use crate::logic;
 
 pub struct Window {
     pub canvas: WindowCanvas,
@@ -53,20 +54,16 @@ impl Graphics {
     }
 
     pub fn update(&mut self, logic: &Logic) {
-        self.left_racket.y = (logic.left_racket().y() * self.height as f32) as i32;
-        self.left_racket.x = (logic.left_racket().x() * self.width as f32) as i32;
-        self.left_racket.set_width((RACKET_WIDTH * self.width as f32) as u32);
-        self.left_racket.set_height((RACKET_HEIGHT * self.height as f32) as u32);
+        Graphics::update_rect(&mut self.left_racket, &logic.left_racket().as_rect(), self.width, self.height);
+        Graphics::update_rect(&mut self.right_racket, &logic.right_racket().as_rect(), self.width, self.height);
+        Graphics::update_rect(&mut self.ball, &logic.ball().as_rect(), self.width, self.height);
+    }
 
-        self.right_racket.y = (logic.right_racket().y() * self.height as f32) as i32;
-        self.right_racket.x = (logic.right_racket().x() * self.width as f32) as i32;
-        self.right_racket.set_width((RACKET_WIDTH * self.width as f32) as u32);
-        self.right_racket.set_height((RACKET_HEIGHT * self.height as f32) as u32);
-
-        self.ball.x = (logic.ball().x() * self.width as f32) as i32;
-        self.ball.y = (logic.ball().y() * self.height as f32) as i32;
-        self.ball.set_width((BALL_DIM * self.width as f32) as u32);
-        self.ball.set_height((BALL_DIM * self.height as f32) as u32);
+    fn update_rect(graphic_rect : &mut Rect, logic_rect: &logic::Rect, w : u32, h: u32){
+        graphic_rect.y = (logic_rect.y * h as f32) as i32;
+        graphic_rect.x = (logic_rect.x * w as f32) as i32;
+        graphic_rect.set_width( (logic_rect.w * w as f32) as u32);
+        graphic_rect.set_height( (logic_rect.h * h  as f32) as u32);
     }
 
     pub fn draw(&self, canvas: &mut WindowCanvas) {
