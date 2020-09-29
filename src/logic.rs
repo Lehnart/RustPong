@@ -1,7 +1,11 @@
+use std::time::{SystemTime, UNIX_EPOCH};
+
 pub const RACKET_HEIGHT: f32 = 0.10;
 pub const RACKET_WIDTH: f32 = 0.01;
+pub const RACKET_SHIFT_X: f32 = 0.01;
 pub const BALL_DIM: f32 = 0.01;
-const RACKET_SPEED: f32 = 0.50;
+pub const BALL_SPEED : f32 = 0.5;
+const RACKET_SPEED: f32 = 0.75;
 
 pub struct Rect{
     pub x : f32,
@@ -19,6 +23,7 @@ pub struct Racket {
     x: f32,
     y: f32,
     vy: f32,
+
 }
 
 impl Racket {
@@ -39,6 +44,9 @@ impl Racket {
         }
     }
 
+    pub fn y(&self) -> f32 {
+        self.y
+    }
 
     pub fn accelerate(&mut self) {
         self.vy += RACKET_SPEED
@@ -63,11 +71,53 @@ impl AsRect for Racket{
 pub struct Ball {
     x: f32,
     y: f32,
+    vx: f32,
+    vy: f32
 }
 
 impl Ball {
     fn new(x: f32, y: f32) -> Ball {
-        Ball { x, y }
+
+        let mut random_angle : u128 = 90 ;
+        while ( random_angle > 70 && random_angle < 110)
+        || (random_angle > 250 && random_angle < 290 ){
+            random_angle = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_millis() % 360;
+        }
+        let random_angle = random_angle as f32;
+        let random_angle = random_angle * std::f64::consts::PI as f32 / 180.;
+        Ball {
+            x,
+            y,
+            vx: random_angle.cos()*BALL_SPEED,
+            vy: random_angle.sin()*BALL_SPEED
+        }
+
+    }
+
+    fn update(&mut self, dt: f32){
+        self.y += self.vy * dt;
+        self.x += self.vx * dt;
+
+        if self.y < 0. || self.y + BALL_DIM > 1. {
+            self.vy = - self.vy;
+        }
+    }
+
+    pub fn x(&self) -> f32 {
+        self.x
+    }
+    pub fn y(&self) -> f32 {
+        self.y
+    }
+    pub fn vx(&self) -> f32 {
+        self.vx
+    }
+
+    pub fn set_vx(&mut self, vx: f32) {
+        self.vx = vx;
     }
 }
 
@@ -92,8 +142,8 @@ pub struct Logic {
 impl Logic {
     pub fn new() -> Logic {
         Logic {
-            left_racket: Racket::new(0.01, 0.5 - (RACKET_HEIGHT / 2.)),
-            right_racket: Racket::new(1. - RACKET_WIDTH - 0.01, 0.5 - (RACKET_HEIGHT / 2.)),
+            left_racket: Racket::new(RACKET_SHIFT_X, 0.5 - (RACKET_HEIGHT / 2.)),
+            right_racket: Racket::new(1. - RACKET_WIDTH - RACKET_SHIFT_X, 0.5 - (RACKET_HEIGHT / 2.)),
             ball: Ball::new(0.5 - (BALL_DIM / 2.), 0.5 - (BALL_DIM / 2.)),
             is_over : false
         }
@@ -102,6 +152,12 @@ impl Logic {
     pub fn update(&mut self, dt: f32) {
         self.left_racket.update(dt);
         self.right_racket.update(dt);
+        self.ball.update(dt);
+
+        if self.ball.x() < 0. || self.ball.x() > 1. {
+            self.ball = Ball::new(0.5 - (BALL_DIM / 2.), 0.5 - (BALL_DIM / 2.));
+        }
+
     }
 
     pub fn left_racket(&self) -> &Racket {
@@ -122,6 +178,10 @@ impl Logic {
 
     pub fn ball(&self) -> &Ball {
         &self.ball
+    }
+
+    pub fn m_ball(&mut self) -> &mut Ball {
+        &mut self.ball
     }
 
     pub fn over(&mut self) {

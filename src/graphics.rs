@@ -63,16 +63,31 @@ impl Graphics {
         canvas.set_draw_color(Color::BLACK);
         canvas.clear();
 
+
+
         canvas.set_draw_color(Color::WHITE);
+        &self.draw_mid_line(canvas);
         canvas.fill_rect(self.left_racket.rect).unwrap();
         canvas.fill_rect(self.right_racket.rect).unwrap();
         canvas.fill_rect(self.ball.rect).unwrap();
         canvas.present();
     }
+
+    fn draw_mid_line(&self, canvas: &mut WindowCanvas){
+        let n_lines = 30;
+        let len_line = self.height / n_lines;
+        let line_width= 5;
+        let line_height = (2./3.*len_line as f32) as u32;
+        let line_x = ( self.width - line_width ) / 2;
+        for i in 0..n_lines {
+            let rect = Rect::new(line_x as i32, (i * len_line) as i32,line_width, line_height );
+            canvas.fill_rect(rect).unwrap();
+        }
+    }
 }
 
 struct Sprite{
-    rect : Rect
+    rect : Rect,
 }
 
 impl Sprite {

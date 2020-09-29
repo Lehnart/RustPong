@@ -1,3 +1,8 @@
+mod graphics;
+mod logic;
+mod event;
+mod collide;
+
 use std::time::SystemTime;
 
 use graphics::Graphics;
@@ -6,12 +11,11 @@ use logic::Logic;
 
 use event::handle_event;
 
-mod graphics;
-mod logic;
-mod event;
+use collide::collide;
+
 
 fn main() {
-    let mut window = Window::new(800, 800);
+    let mut window = Window::new(600, 600);
     let mut graphics = Graphics::new(&window.canvas);
     let mut logic = Logic::new();
 
@@ -32,6 +36,8 @@ fn main() {
         if logic.is_over(){
             break 'game_loop
         }
+
+        collide(&mut logic, dt);
 
         graphics.update(&logic);
         graphics.draw(&mut window.canvas);
