@@ -7,6 +7,36 @@ pub const BALL_DIM: f32 = 0.01;
 pub const BALL_SPEED : f32 = 0.5;
 const RACKET_SPEED: f32 = 0.75;
 
+pub struct Score{
+    left : u8,
+    right : u8
+}
+
+impl Score{
+    fn new() -> Score{
+        Score{
+            left :0,
+            right :0,
+        }
+    }
+
+    pub fn left(&self) -> u8 {
+        self.left
+    }
+    pub fn right(&self) -> u8 {
+        self.right
+    }
+
+    pub fn point_left(&mut self){
+        self.left += 1;
+    }
+
+    pub fn point_right(&mut self){
+        self.right += 1;
+    }
+
+}
+
 pub struct Rect{
     pub x : f32,
     pub y : f32,
@@ -136,6 +166,7 @@ pub struct Logic {
     left_racket: Racket,
     right_racket: Racket,
     ball: Ball,
+    score: Score,
     is_over: bool
 }
 
@@ -145,6 +176,7 @@ impl Logic {
             left_racket: Racket::new(RACKET_SHIFT_X, 0.5 - (RACKET_HEIGHT / 2.)),
             right_racket: Racket::new(1. - RACKET_WIDTH - RACKET_SHIFT_X, 0.5 - (RACKET_HEIGHT / 2.)),
             ball: Ball::new(0.5 - (BALL_DIM / 2.), 0.5 - (BALL_DIM / 2.)),
+            score: Score::new(),
             is_over : false
         }
     }
@@ -155,6 +187,15 @@ impl Logic {
         self.ball.update(dt);
 
         if self.ball.x() < 0. || self.ball.x() > 1. {
+
+            if self.ball.x() < 0.{
+                self.score.point_right();
+            }
+
+            else{
+                self.score.point_left()
+            }
+
             self.ball = Ball::new(0.5 - (BALL_DIM / 2.), 0.5 - (BALL_DIM / 2.));
         }
 
@@ -190,5 +231,9 @@ impl Logic {
 
     pub fn is_over(&self) -> bool {
         self.is_over
+    }
+
+    pub fn score(&self) -> &Score {
+        &self.score
     }
 }
