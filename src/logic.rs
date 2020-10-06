@@ -4,19 +4,19 @@ pub const RACKET_HEIGHT: f32 = 0.10;
 pub const RACKET_WIDTH: f32 = 0.01;
 pub const RACKET_SHIFT_X: f32 = 0.01;
 pub const BALL_DIM: f32 = 0.01;
-pub const BALL_SPEED : f32 = 0.5;
+pub const BALL_SPEED: f32 = 0.5;
 const RACKET_SPEED: f32 = 0.75;
 
-pub struct Score{
-    left : u8,
-    right : u8
+pub struct Score {
+    left: u8,
+    right: u8,
 }
 
-impl Score{
-    fn new() -> Score{
-        Score{
-            left :0,
-            right :0,
+impl Score {
+    fn new() -> Score {
+        Score {
+            left: 0,
+            right: 0,
         }
     }
 
@@ -27,21 +27,20 @@ impl Score{
         self.right
     }
 
-    pub fn point_left(&mut self){
+    pub fn point_left(&mut self) {
         self.left += 1;
     }
 
-    pub fn point_right(&mut self){
+    pub fn point_right(&mut self) {
         self.right += 1;
     }
-
 }
 
-pub struct Rect{
-    pub x : f32,
-    pub y : f32,
-    pub w : f32,
-    pub h : f32
+pub struct Rect {
+    pub x: f32,
+    pub y: f32,
+    pub w: f32,
+    pub h: f32,
 }
 
 pub trait AsRect {
@@ -87,13 +86,13 @@ impl Racket {
     }
 }
 
-impl AsRect for Racket{
+impl AsRect for Racket {
     fn as_rect(&self) -> Rect {
-        Rect{
+        Rect {
             x: self.x,
             y: self.y,
             w: RACKET_WIDTH,
-            h: RACKET_HEIGHT
+            h: RACKET_HEIGHT,
         }
     }
 }
@@ -102,15 +101,14 @@ pub struct Ball {
     x: f32,
     y: f32,
     vx: f32,
-    vy: f32
+    vy: f32,
 }
 
 impl Ball {
     fn new(x: f32, y: f32) -> Ball {
-
-        let mut random_angle : u128 = 90 ;
-        while ( random_angle > 70 && random_angle < 110)
-        || (random_angle > 250 && random_angle < 290 ){
+        let mut random_angle: u128 = 90;
+        while (random_angle > 70 && random_angle < 110)
+            || (random_angle > 250 && random_angle < 290) {
             random_angle = SystemTime::now()
                 .duration_since(UNIX_EPOCH)
                 .unwrap()
@@ -121,18 +119,22 @@ impl Ball {
         Ball {
             x,
             y,
-            vx: random_angle.cos()*BALL_SPEED,
-            vy: random_angle.sin()*BALL_SPEED
+            vx: random_angle.cos() * BALL_SPEED,
+            vy: random_angle.sin() * BALL_SPEED,
         }
-
     }
 
-    fn update(&mut self, dt: f32){
+    fn update(&mut self, dt: f32) {
         self.y += self.vy * dt;
         self.x += self.vx * dt;
 
-        if self.y < 0. || self.y + BALL_DIM > 1. {
-            self.vy = - self.vy;
+        if self.y<0. {
+            self.y=0.;
+            self.vy = -self.vy;
+        }
+        if self.y + BALL_DIM > 1. {
+            self.y = 1. - BALL_DIM;
+            self.vy = -self.vy;
         }
     }
 
@@ -146,18 +148,22 @@ impl Ball {
         self.vx
     }
 
+    pub fn v(&self) -> f32 { ((self.vx*self.vx)+(self.vy*self.vy)).sqrt() }
     pub fn set_vx(&mut self, vx: f32) {
         self.vx = vx;
     }
+    pub fn set_vy(&mut self, vy: f32) {
+        self.vy = vy;
+    }
 }
 
-impl AsRect for Ball{
+impl AsRect for Ball {
     fn as_rect(&self) -> Rect {
-        Rect{
+        Rect {
             x: self.x,
             y: self.y,
             w: BALL_DIM,
-            h: BALL_DIM
+            h: BALL_DIM,
         }
     }
 }
@@ -167,7 +173,7 @@ pub struct Logic {
     right_racket: Racket,
     ball: Ball,
     score: Score,
-    is_over: bool
+    is_over: bool,
 }
 
 impl Logic {
@@ -177,7 +183,7 @@ impl Logic {
             right_racket: Racket::new(1. - RACKET_WIDTH - RACKET_SHIFT_X, 0.5 - (RACKET_HEIGHT / 2.)),
             ball: Ball::new(0.5 - (BALL_DIM / 2.), 0.5 - (BALL_DIM / 2.)),
             score: Score::new(),
-            is_over : false
+            is_over: false,
         }
     }
 
@@ -187,18 +193,18 @@ impl Logic {
         self.ball.update(dt);
 
         if self.ball.x() < 0. || self.ball.x() > 1. {
-
-            if self.ball.x() < 0.{
+            if self.ball.x() < 0. {
                 self.score.point_right();
+            } else {
+                self.score.point_left()
             }
 
-            else{
-                self.score.point_left()
+            if self.score.left() >= 10 || self.score.right() >= 10 {
+                self.is_over = true
             }
 
             self.ball = Ball::new(0.5 - (BALL_DIM / 2.), 0.5 - (BALL_DIM / 2.));
         }
-
     }
 
     pub fn left_racket(&self) -> &Racket {
