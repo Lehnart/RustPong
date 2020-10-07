@@ -127,15 +127,6 @@ impl Ball {
     fn update(&mut self, dt: f32) {
         self.y += self.vy * dt;
         self.x += self.vx * dt;
-
-        if self.y<0. {
-            self.y=0.;
-            self.vy = -self.vy;
-        }
-        if self.y + BALL_DIM > 1. {
-            self.y = 1. - BALL_DIM;
-            self.vy = -self.vy;
-        }
     }
 
     pub fn x(&self) -> f32 {
@@ -173,7 +164,16 @@ pub struct Logic {
     right_racket: Racket,
     ball: Ball,
     score: Score,
+
     is_over: bool,
+    is_point: bool,
+    is_wall_collide: bool,
+}
+
+impl Logic {
+    pub fn is_wall_collide(&self) -> bool {
+        self.is_wall_collide
+    }
 }
 
 impl Logic {
@@ -184,15 +184,38 @@ impl Logic {
             ball: Ball::new(0.5 - (BALL_DIM / 2.), 0.5 - (BALL_DIM / 2.)),
             score: Score::new(),
             is_over: false,
+            is_point: false,
+            is_wall_collide: false,
         }
     }
 
+    pub fn is_point(&self) -> bool {
+        self.is_point
+    }
+
     pub fn update(&mut self, dt: f32) {
+        self.is_point = false;
+        self.is_wall_collide = false;
         self.left_racket.update(dt);
         self.right_racket.update(dt);
+
+
         self.ball.update(dt);
+        if self.ball.y<0. {
+            self.ball.y=0.;
+            self.ball.set_vy(-self.ball.vy);
+            self.is_wall_collide = true;
+        }
+        if self.ball.y + BALL_DIM > 1. {
+            self.ball.y = 1. - BALL_DIM;
+            self.ball.set_vy(-self.ball.vy);
+            self.is_wall_collide = true;
+        }
+
 
         if self.ball.x() < 0. || self.ball.x() > 1. {
+            self.is_point=true;
+
             if self.ball.x() < 0. {
                 self.score.point_right();
             } else {

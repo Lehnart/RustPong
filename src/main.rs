@@ -2,23 +2,24 @@ mod graphics;
 mod logic;
 mod event;
 mod collide;
+mod audio;
 
 use std::time::SystemTime;
 
 use graphics::Graphics;
 use graphics::Window;
 use logic::Logic;
-
+use audio::Audio;
 use event::handle_event;
-
-use collide::collide;
+use collide::Collide;
 
 
 fn main() {
     let mut window = Window::new(600, 600);
     let mut graphics = Graphics::new(&window.canvas);
     let mut logic = Logic::new();
-
+    let audio = Audio::new();
+    let mut collide = Collide::new();
     let mut start = SystemTime::now();
 
     'game_loop: loop {
@@ -37,8 +38,9 @@ fn main() {
             break 'game_loop
         }
 
-        collide(&mut logic, dt);
+        collide.collide(&mut logic, dt);
 
+        audio.update(&logic, &collide);
         graphics.update(&logic);
         graphics.draw(&mut window.canvas);
 
