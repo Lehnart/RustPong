@@ -1,8 +1,8 @@
 mod graphics;
-mod logic;
 mod event;
 mod collide;
 mod audio;
+mod logic;
 
 use std::time::SystemTime;
 
@@ -15,18 +15,20 @@ use collide::Collide;
 
 
 fn main() {
+
+    let mut logic = Logic::new();
     let mut window = Window::new(600, 600);
     let mut graphics = Graphics::new(&window.canvas);
-    let mut logic = Logic::new();
+
     let audio = Audio::new();
     let mut collide = Collide::new();
-    let mut start = SystemTime::now();
 
+    let mut previous = SystemTime::now();
     'game_loop: loop {
 
         let next = SystemTime::now();
-        let dt = next.duration_since(start).unwrap().as_secs_f32();
-        start = next;
+        let dt = next.duration_since(previous).unwrap().as_secs_f32();
+        previous = next;
 
         let event_pump = &mut window.event_pump;
         for event in event_pump.poll_iter() {
@@ -41,6 +43,7 @@ fn main() {
         collide.collide(&mut logic, dt);
 
         audio.update(&logic, &collide);
+
         graphics.update(&logic);
         graphics.draw(&mut window.canvas);
 

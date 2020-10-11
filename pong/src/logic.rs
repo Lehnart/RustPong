@@ -1,5 +1,7 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use engine::rect::{AsRect, Rect};
+
 pub const RACKET_HEIGHT: f32 = 0.10;
 pub const RACKET_WIDTH: f32 = 0.01;
 pub const RACKET_SHIFT_X: f32 = 0.01;
@@ -27,32 +29,18 @@ impl Score {
         self.right
     }
 
-    pub fn point_left(&mut self) {
-        self.left += 1;
-    }
-
+    pub fn point_left(&mut self) { self.left += 1; }
     pub fn point_right(&mut self) {
         self.right += 1;
     }
 }
 
-pub struct Rect {
-    pub x: f32,
-    pub y: f32,
-    pub w: f32,
-    pub h: f32,
-}
-
-pub trait AsRect {
-    fn as_rect(&self) -> Rect;
-}
 
 
 pub struct Racket {
     x: f32,
     y: f32,
     vy: f32,
-
 }
 
 impl Racket {
@@ -139,7 +127,7 @@ impl Ball {
         self.vx
     }
 
-    pub fn v(&self) -> f32 { ((self.vx*self.vx)+(self.vy*self.vy)).sqrt() }
+    pub fn v(&self) -> f32 { ((self.vx * self.vx) + (self.vy * self.vy)).sqrt() }
     pub fn set_vx(&mut self, vx: f32) {
         self.vx = vx;
     }
@@ -201,8 +189,8 @@ impl Logic {
 
 
         self.ball.update(dt);
-        if self.ball.y<0. {
-            self.ball.y=0.;
+        if self.ball.y < 0. {
+            self.ball.y = 0.;
             self.ball.set_vy(-self.ball.vy);
             self.is_wall_collide = true;
         }
@@ -214,7 +202,7 @@ impl Logic {
 
 
         if self.ball.x() < 0. || self.ball.x() > 1. {
-            self.is_point=true;
+            self.is_point = true;
 
             if self.ball.x() < 0. {
                 self.score.point_right();
