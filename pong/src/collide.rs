@@ -1,4 +1,4 @@
-use crate::logic::{Ball, BALL_DIM, Logic, RACKET_HEIGHT, RACKET_SHIFT_X, RACKET_WIDTH};
+use crate::logic::{BALL_DIM, Logic, RACKET_HEIGHT, RACKET_SHIFT_X, RACKET_WIDTH};
 use std::f64::consts::PI;
 use engine::geometry::{AsRect, Rect};
 use engine::collide::collide;

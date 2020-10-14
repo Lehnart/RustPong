@@ -1,5 +1,4 @@
 use crate::geometry::Rect;
-use std::cmp::min;
 
 pub fn collide(r1 : &Rect, r2 : &Rect) -> Option<Rect> {
     if r1.x0() < r2.x0() && r2.x0() > r1.x1(){

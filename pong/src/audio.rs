@@ -1,7 +1,6 @@
-use sdl2::mixer::{AUDIO_S16LSB, Chunk, DEFAULT_CHANNELS};
+use sdl2::mixer::{Chunk};
 
 use crate::collide::Collide;
-use crate::logic::Logic;
 
 pub struct Audio {
     wall_bounce: Chunk,

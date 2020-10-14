@@ -190,8 +190,8 @@ pub struct Logic<'a> {
     pub score: Score,
 
     audio : &'a Audio,
-    is_over: bool,
 
+    is_over: bool,
 }
 
 impl Logic<'_> {
@@ -214,10 +214,14 @@ impl Logic<'_> {
         self.left_racket.update(dt);
         self.right_racket.update(dt);
         self.ball.update(dt);
+        self.update_score();
+    }
 
+    /// Check if the ball is out of board, meaning there is a goal.
+    /// Add a point to the player who scores and thrown another ball
+    fn update_score(&mut self){
         let ball_rect = self.ball.as_rect();
         let x = ball_rect.xc();
-
         if x < 0. || x > 1. {
             self.audio.play_lose();
 
@@ -238,6 +242,7 @@ impl Logic<'_> {
         self.is_over = true;
     }
 
+    /// Is the game over?
     pub fn is_over(&self) -> bool {
         self.is_over
     }

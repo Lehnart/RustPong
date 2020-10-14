@@ -1,4 +1,4 @@
-use sdl2::mixer::{AUDIO_S16LSB, Chunk, DEFAULT_CHANNELS};
+use sdl2::mixer::{AUDIO_S16LSB, DEFAULT_CHANNELS};
 
 pub fn init_audio(){
     let frequency = 44_100;
