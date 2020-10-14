@@ -1,256 +1,244 @@
-use std::time::{SystemTime, UNIX_EPOCH};
-
-use engine::rect::{AsRect, Rect};
+//! All logic aspect of the pong game.
+use engine::geometry::{AsRect, Rect};
+use engine::physics::{Velocity, Solid, Position};
+use engine::random::{rand, flip};
+use crate::audio::Audio;
 
 pub const RACKET_HEIGHT: f32 = 0.10;
 pub const RACKET_WIDTH: f32 = 0.01;
 pub const RACKET_SHIFT_X: f32 = 0.01;
-pub const BALL_DIM: f32 = 0.01;
-pub const BALL_SPEED: f32 = 0.5;
 const RACKET_SPEED: f32 = 0.75;
 
+pub const BALL_DIM: f32 = 0.01;
+pub const BALL_SPEED: f32 = 0.5;
+
+pub const SCORE_MAX: u8 = 10;
+
+/// Score of each of the player in a pong game.
+///
+/// Score in pong is one score per player.
+/// Each player is represented by a side of the game, left or right.
+/// The first to achieve [`max`] win the game.
+/// Max score is 10 by default.
+///
+/// [`max`]: Score::max
+///
 pub struct Score {
+
+    /// Left player score.
     left: u8,
+
+    /// Right player score.
     right: u8,
+
+    /// Score to achieve to win the game.
+    max : u8,
 }
 
 impl Score {
+
+    /// Create a new score, starting at 0 zero for each player.
     fn new() -> Score {
         Score {
             left: 0,
             right: 0,
+            max: SCORE_MAX
         }
     }
 
+    /// Get left player score.
     pub fn left(&self) -> u8 {
         self.left
     }
+
+    /// Get right player score.
     pub fn right(&self) -> u8 {
         self.right
     }
 
+    /// Add one point to left player.
     pub fn point_left(&mut self) { self.left += 1; }
+
+    /// Add one point to right player.
     pub fn point_right(&mut self) {
         self.right += 1;
     }
+
+    /// If a player reach the max score, the game is over.
+    pub fn is_game_over(&self) -> bool {
+        self.right >= self.max || self.left >= self.max
+    }
 }
 
-
-
+/// A racket represents a player in pong game.
+///
+/// A racket is represented as a solid, meaning a rect with a speed.
+/// It can be moved by the player.
+/// It is used to reflect the ball to the opponent racket.
+///
 pub struct Racket {
-    x: f32,
-    y: f32,
-    vy: f32,
+    solid: Solid
 }
 
 impl Racket {
+
+    /// Create a new racket.
+    ///
+    /// At creation the racket is not moving.
+    /// It can't get out from the screen.
     fn new(x: f32, y: f32) -> Racket {
+        let pos = Position::new(x,y);
+        let vel = Velocity::new(0.,0.);
+        let limit = Rect::new(0.,0.,1.,1.);
         Racket {
-            x,
-            y,
-            vy: 0.,
+            solid: Solid::new(pos, vel, RACKET_WIDTH, RACKET_HEIGHT, limit)
         }
     }
 
+    /// Racket update is just the solid physics updating.
     fn update(&mut self, dt: f32) {
-        self.y += self.vy * dt;
-        if self.y < 0. {
-            self.y = 0.;
-        } else if self.y + RACKET_HEIGHT > 1. {
-            self.y = 1. - RACKET_HEIGHT;
-        }
+        self.solid.update(dt);
     }
 
-    pub fn y(&self) -> f32 {
-        self.y
-    }
-
+    /// To make the racket start moving.
     pub fn accelerate(&mut self) {
-        self.vy += RACKET_SPEED
+        self.solid.add_v(&Velocity::new(0., RACKET_SPEED));
     }
 
+    /// To make the racket stop moving.
     pub fn decelerate(&mut self) {
-        self.vy -= RACKET_SPEED
+        self.solid.add_v(&Velocity::new(0., -RACKET_SPEED));
     }
 }
 
+/// Converting the racket to a Rect make it more easy for collision and drawing.
 impl AsRect for Racket {
     fn as_rect(&self) -> Rect {
-        Rect {
-            x: self.x,
-            y: self.y,
-            w: RACKET_WIDTH,
-            h: RACKET_HEIGHT,
-        }
+        self.solid.as_rect()
     }
 }
 
+/// The ball which move across the board, between rackets.
+///
+/// A ball is represented as a solid.
+/// It is reflected on rackets.
+///
 pub struct Ball {
-    x: f32,
-    y: f32,
-    vx: f32,
-    vy: f32,
+    solid: Solid
 }
 
 impl Ball {
+
+    /// Create a new ball with a random direction
     fn new(x: f32, y: f32) -> Ball {
-        let mut random_angle: u128 = 90;
-        while (random_angle > 70 && random_angle < 110)
-            || (random_angle > 250 && random_angle < 290) {
-            random_angle = SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap()
-                .as_millis() % 360;
+
+        let mut random_angle: i32 = rand(-35,35);
+        if flip() {
+            random_angle += 180;
         }
-        let random_angle = random_angle as f32;
-        let random_angle = random_angle * std::f64::consts::PI as f32 / 180.;
+        let random_angle = random_angle as f32 * std::f32::consts::PI / 180.;
+
+        let pos = Position::new(x,y);
+        let vel = Velocity::new(random_angle.cos() * BALL_SPEED,random_angle.sin() * BALL_SPEED);
+        let limit = Rect::new(-1.,-1.,2.,2.);
+
         Ball {
-            x,
-            y,
-            vx: random_angle.cos() * BALL_SPEED,
-            vy: random_angle.sin() * BALL_SPEED,
+            solid: Solid::new(pos, vel, BALL_DIM, BALL_DIM, limit)
         }
     }
 
+    /// Ball update is just the solid physics updating.
     fn update(&mut self, dt: f32) {
-        self.y += self.vy * dt;
-        self.x += self.vx * dt;
+        self.solid.update(dt);
     }
 
-    pub fn x(&self) -> f32 {
-        self.x
-    }
-    pub fn y(&self) -> f32 {
-        self.y
-    }
-    pub fn vx(&self) -> f32 {
-        self.vx
+    pub fn solid(&self)-> & Solid{
+        &self.solid
     }
 
-    pub fn v(&self) -> f32 { ((self.vx * self.vx) + (self.vy * self.vy)).sqrt() }
-    pub fn set_vx(&mut self, vx: f32) {
-        self.vx = vx;
+    pub fn m_solid(&mut self)-> &mut Solid{
+        &mut self.solid
     }
-    pub fn set_vy(&mut self, vy: f32) {
-        self.vy = vy;
+
+    pub fn set_y(&mut self, y : f32){
+        self.solid.m_pos().set_y(y);
+    }
+
+    pub fn reflect(&mut self) {
+        let vy = self.solid.m_vel().vy();
+        self.solid.m_vel().set_vy(-vy);
     }
 }
 
+/// Converting the ball to a Rect make it more easy for collision and drawing.
 impl AsRect for Ball {
     fn as_rect(&self) -> Rect {
-        Rect {
-            x: self.x,
-            y: self.y,
-            w: BALL_DIM,
-            h: BALL_DIM,
-        }
+        self.solid.as_rect()
     }
 }
 
-pub struct Logic {
-    left_racket: Racket,
-    right_racket: Racket,
-    ball: Ball,
-    score: Score,
+/// Logic is a structure that contains all entities from a pong game.
+///
+/// It contains the two rackets and the ball.
+/// There is also the current score.
+/// Access is done directly through the fields, there are public.
+///
+pub struct Logic<'a> {
+    pub left_racket: Racket,
+    pub right_racket: Racket,
+    pub ball: Ball,
+    pub score: Score,
 
+    audio : &'a Audio,
     is_over: bool,
-    is_point: bool,
-    is_wall_collide: bool,
+
 }
 
-impl Logic {
-    pub fn is_wall_collide(&self) -> bool {
-        self.is_wall_collide
-    }
-}
+impl Logic<'_> {
 
-impl Logic {
-    pub fn new() -> Logic {
+    /// Create a new game logic with default values for game settings
+    pub fn new(audio: &Audio) -> Logic {
         Logic {
             left_racket: Racket::new(RACKET_SHIFT_X, 0.5 - (RACKET_HEIGHT / 2.)),
             right_racket: Racket::new(1. - RACKET_WIDTH - RACKET_SHIFT_X, 0.5 - (RACKET_HEIGHT / 2.)),
             ball: Ball::new(0.5 - (BALL_DIM / 2.), 0.5 - (BALL_DIM / 2.)),
             score: Score::new(),
-            is_over: false,
-            is_point: false,
-            is_wall_collide: false,
+
+            audio,
+            is_over: false
         }
     }
 
-    pub fn is_point(&self) -> bool {
-        self.is_point
-    }
-
+    /// Update each entity of a delta of time and check if the game is over.
     pub fn update(&mut self, dt: f32) {
-        self.is_point = false;
-        self.is_wall_collide = false;
         self.left_racket.update(dt);
         self.right_racket.update(dt);
-
-
         self.ball.update(dt);
-        if self.ball.y < 0. {
-            self.ball.y = 0.;
-            self.ball.set_vy(-self.ball.vy);
-            self.is_wall_collide = true;
-        }
-        if self.ball.y + BALL_DIM > 1. {
-            self.ball.y = 1. - BALL_DIM;
-            self.ball.set_vy(-self.ball.vy);
-            self.is_wall_collide = true;
-        }
 
+        let ball_rect = self.ball.as_rect();
+        let x = ball_rect.xc();
 
-        if self.ball.x() < 0. || self.ball.x() > 1. {
-            self.is_point = true;
+        if x < 0. || x > 1. {
+            self.audio.play_lose();
 
-            if self.ball.x() < 0. {
+            if x < 0. {
                 self.score.point_right();
             } else {
                 self.score.point_left()
             }
-
-            if self.score.left() >= 10 || self.score.right() >= 10 {
+            if self.score.is_game_over() {
                 self.is_over = true
             }
-
             self.ball = Ball::new(0.5 - (BALL_DIM / 2.), 0.5 - (BALL_DIM / 2.));
         }
     }
 
-    pub fn left_racket(&self) -> &Racket {
-        &self.left_racket
-    }
-
-    pub fn right_racket(&self) -> &Racket {
-        &self.right_racket
-    }
-
-    pub fn m_left_racket(&mut self) -> &mut Racket {
-        &mut self.left_racket
-    }
-
-    pub fn m_right_racket(&mut self) -> &mut Racket {
-        &mut self.right_racket
-    }
-
-    pub fn ball(&self) -> &Ball {
-        &self.ball
-    }
-
-    pub fn m_ball(&mut self) -> &mut Ball {
-        &mut self.ball
-    }
-
+    /// Set the game over
     pub fn over(&mut self) {
         self.is_over = true;
     }
 
     pub fn is_over(&self) -> bool {
         self.is_over
-    }
-
-    pub fn score(&self) -> &Score {
-        &self.score
     }
 }

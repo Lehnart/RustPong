@@ -13,15 +13,18 @@ use audio::Audio;
 use event::handle_event;
 use collide::Collide;
 
+use engine::audio::init_audio;
 
 fn main() {
 
-    let mut logic = Logic::new();
+    init_audio();
+    let audio = Audio::new();
+    let mut logic = Logic::new(&audio);
+    let mut collide = Collide::new(&audio);
+
     let mut window = Window::new(600, 600);
     let mut graphics = Graphics::new(&window.canvas);
 
-    let audio = Audio::new();
-    let mut collide = Collide::new();
 
     let mut previous = SystemTime::now();
     'game_loop: loop {
@@ -40,14 +43,13 @@ fn main() {
             break 'game_loop
         }
 
+        collide.collide_ball_and_wall(&mut logic);
         collide.collide(&mut logic, dt);
 
-        audio.update(&logic, &collide);
+        audio.update(&collide);
 
         graphics.update(&logic);
         graphics.draw(&mut window.canvas);
-
-
     }
 }
 

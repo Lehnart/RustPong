@@ -10,29 +10,29 @@ pub fn handle_event(event:Event, logic: &mut Logic){
         }
 
         Event::KeyDown { keycode: Some(Keycode::Up), repeat: false, .. } => {
-            logic.m_left_racket().decelerate();
+            logic.left_racket.decelerate();
         }
         Event::KeyDown { keycode: Some(Keycode::Down), repeat: false, .. } => {
-            logic.m_left_racket().accelerate();
+            logic.left_racket.accelerate();
         }
         Event::KeyUp { keycode: Some(Keycode::Up), repeat: false, .. } => {
-            logic.m_left_racket().accelerate();
+            logic.left_racket.accelerate();
         }
         Event::KeyUp { keycode: Some(Keycode::Down), repeat: false, .. } => {
-            logic.m_left_racket().decelerate();
+            logic.left_racket.decelerate();
         }
 
         Event::KeyDown { keycode: Some(Keycode::Z), repeat: false, .. } => {
-            logic.m_right_racket().decelerate();
+            logic.right_racket.decelerate();
         }
         Event::KeyDown { keycode: Some(Keycode::S), repeat: false, .. } => {
-            logic.m_right_racket().accelerate();
+            logic.right_racket.accelerate();
         }
         Event::KeyUp { keycode: Some(Keycode::Z), repeat: false, .. } => {
-            logic.m_right_racket().accelerate();
+            logic.right_racket.accelerate();
         }
         Event::KeyUp { keycode: Some(Keycode::S), repeat: false, .. } => {
-            logic.m_right_racket().decelerate();
+            logic.right_racket.decelerate();
         }
         _ => {}
     }

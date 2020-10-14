@@ -4,9 +4,8 @@ use sdl2::rect::Rect;
 use sdl2::render::{WindowCanvas};
 use sdl2::surface::Surface;
 
-use crate::logic;
 use crate::logic::Logic;
-use engine::rect::AsRect;
+use engine::geometry::AsRect;
 
 pub const SCORE_SPRITE_PATHS: [&str; 10] = [
     "res/0.bmp",
@@ -73,9 +72,9 @@ impl Graphics<'_> {
     }
 
     pub fn update(&mut self, logic: &Logic) {
-        self.left_racket.update(logic.left_racket().as_rect(), self.width, self.height);
-        self.right_racket.update(logic.right_racket().as_rect(), self.width, self.height);
-        self.ball.update(logic.ball().as_rect(), self.width, self.height);
+        self.left_racket.update(logic.left_racket.as_rect(), self.width, self.height);
+        self.right_racket.update(logic.right_racket.as_rect(), self.width, self.height);
+        self.ball.update(logic.ball.as_rect(), self.width, self.height);
         self.score.update(logic);
     }
 
@@ -116,11 +115,11 @@ impl Sprite {
         }
     }
 
-    fn update(&mut self, logic_rect: engine::rect::Rect, canvas_width: u32, canvas_height: u32) {
-        self.rect.y = (logic_rect.y * canvas_height as f32) as i32;
-        self.rect.x = (logic_rect.x * canvas_width as f32) as i32;
-        self.rect.set_width((logic_rect.w * canvas_width as f32) as u32);
-        self.rect.set_height((logic_rect.h * canvas_height as f32) as u32);
+    fn update(&mut self, logic_rect: engine::geometry::Rect, canvas_width: u32, canvas_height: u32) {
+        self.rect.y = (logic_rect.y0() * canvas_height as f32) as i32;
+        self.rect.x = (logic_rect.x0() * canvas_width as f32) as i32;
+        self.rect.set_width((logic_rect.w() * canvas_width as f32) as u32);
+        self.rect.set_height((logic_rect.h() * canvas_height as f32) as u32);
     }
 }
 
@@ -147,8 +146,8 @@ impl Score<'_> {
     }
 
     pub fn update(&mut self, logic: &Logic) {
-        self.left = logic.score().left();
-        self.right = logic.score().right();
+        self.left = logic.score.left();
+        self.right = logic.score.right();
     }
 
     pub fn draw(&self, canvas: &mut WindowCanvas) {
