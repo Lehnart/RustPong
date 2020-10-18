@@ -1,11 +1,12 @@
-use sdl2::EventPump;
-use sdl2::pixels::{Color};
+use sdl2::pixels::Color;
 use sdl2::rect::Rect;
-use sdl2::render::{WindowCanvas};
+use sdl2::render::WindowCanvas;
 use sdl2::surface::Surface;
 
-use crate::logic::Logic;
 use engine::geometry::AsRect;
+use engine::graphics::{Sprite, Window};
+
+use crate::logic::Logic;
 
 pub const SCORE_SPRITE_PATHS: [&str; 10] = [
     "res/0.bmp",
@@ -20,83 +21,75 @@ pub const SCORE_SPRITE_PATHS: [&str; 10] = [
     "res/9.bmp"
 ];
 
+pub const MID_LINE_N: u32 = 30;
+pub const MID_LINE_WIDTH: u32 = 5;
+pub const MID_LINE_RELATIVE_LENGTH : f32 = 0.6;
 
-pub struct Window {
-    pub canvas: WindowCanvas,
-    pub event_pump: EventPump,
-}
-
-impl Window {
-    pub fn new(width: u32, height: u32) -> Window {
-        let sdl_context = sdl2::init().unwrap();
-
-        let video_subsystem = sdl_context.video().unwrap();
-        let window = video_subsystem
-            .window("Pong in Rust", width, height)
-            .position_centered()
-            .build()
-            .unwrap();
-
-        let window = Window {
-            canvas: window.into_canvas().build().unwrap(),
-            event_pump: sdl_context.event_pump().unwrap(),
-        };
-
-        window
-    }
-}
-
+/// Struct containing all basic dynamic elements required to draw the game.
+///
+/// The graphics part contains the 2 rackets, the ball, and the score.
 pub struct Graphics<'a> {
-    width: u32,
-    height: u32,
-
     left_racket: Sprite,
     right_racket: Sprite,
     ball: Sprite,
-
     score: Score<'a>,
 }
 
 impl Graphics<'_> {
-    pub fn new<'a>(canvas: &WindowCanvas) -> Graphics<'a> {
-        let dim = canvas.output_size().unwrap();
 
+    /// Init the dynamic elements required to draw the game
+    pub fn new<'a>() -> Graphics<'a> {
         Graphics {
-            width: dim.0,
-            height: dim.1,
-            left_racket: Sprite::new(0, 0, 1, 1),
-            right_racket: Sprite::new(0, 0, 1, 1),
-            ball: Sprite::new(0, 0, 1, 1),
+            left_racket: Sprite::default(),
+            right_racket: Sprite::default(),
+            ball: Sprite::default(),
             score: Score::new(),
         }
     }
 
-    pub fn update(&mut self, logic: &Logic) {
-        self.left_racket.update(logic.left_racket.as_rect(), self.width, self.height);
-        self.right_racket.update(logic.right_racket.as_rect(), self.width, self.height);
-        self.ball.update(logic.ball.as_rect(), self.width, self.height);
+    /// Update the dynamic elements accordingly to the state of the game.
+    pub fn update(&mut self, logic: &Logic, window: &Window) {
+        let w = window.width();
+        let h = window.height();
+
+        self.left_racket.update(logic.left_racket.as_rect(), w, h);
+        self.right_racket.update(logic.right_racket.as_rect(), w, h);
+        self.ball.update(logic.ball.as_rect(), w, h);
         self.score.update(logic);
     }
 
-    pub fn draw(&self, canvas: &mut WindowCanvas) {
-        canvas.set_draw_color(Color::BLACK);
-        canvas.clear();
+    /// Draw the game.
+    ///
+    /// Start by clearing the all board.
+    /// Then, it draws the static element : the mid line for instance.
+    /// Finally, it draws each dynamic element and show the canvas
+    pub fn draw(&self, window: &mut Window) {
 
-        canvas.set_draw_color(Color::WHITE);
-        self.draw_mid_line(canvas);
+        window.clear();
+
+        self.draw_mid_line(window);
+
+        let canvas = &mut window.canvas;
         canvas.fill_rect(self.left_racket.rect).unwrap();
         canvas.fill_rect(self.right_racket.rect).unwrap();
         canvas.fill_rect(self.ball.rect).unwrap();
+
         self.score.draw(canvas);
+
         canvas.present();
     }
 
-    fn draw_mid_line(&self, canvas: &mut WindowCanvas) {
-        let n_lines = 30;
-        let len_line = self.height / n_lines;
-        let line_width = 5;
-        let line_height = (2. / 3. * len_line as f32) as u32;
-        let line_x = (self.width - line_width) / 2;
+
+    /// Private function to draw the static mid line.
+    fn draw_mid_line(&self, window: &mut Window) {
+        let n_lines = MID_LINE_N;
+        let len_line = window.height() / n_lines;
+        let line_width = MID_LINE_WIDTH;
+        let line_height = (MID_LINE_RELATIVE_LENGTH * len_line as f32) as u32;
+        let line_x = (window.width() - line_width) / 2;
+
+        let canvas = &mut window.canvas;
+        canvas.set_draw_color(Color::WHITE);
         for i in 0..n_lines {
             let rect = Rect::new(line_x as i32, (i * len_line) as i32, line_width, line_height);
             canvas.fill_rect(rect).unwrap();
@@ -104,25 +97,7 @@ impl Graphics<'_> {
     }
 }
 
-struct Sprite {
-    rect: Rect,
-}
-
-impl Sprite {
-    fn new(x: i32, y: i32, w: u32, h: u32) -> Sprite {
-        Sprite {
-            rect: Rect::new(x, y, w, h)
-        }
-    }
-
-    fn update(&mut self, logic_rect: engine::geometry::Rect, canvas_width: u32, canvas_height: u32) {
-        self.rect.y = (logic_rect.y0() * canvas_height as f32) as i32;
-        self.rect.x = (logic_rect.x0() * canvas_width as f32) as i32;
-        self.rect.set_width((logic_rect.w() * canvas_width as f32) as u32);
-        self.rect.set_height((logic_rect.h() * canvas_height as f32) as u32);
-    }
-}
-
+/// Used to draw the current score, using digit sprites.
 struct Score<'a> {
     left: u8,
     right: u8,
@@ -130,6 +105,8 @@ struct Score<'a> {
 }
 
 impl Score<'_> {
+
+    /// Create an empty score
     pub fn new<'a>() -> Score<'a> {
         let mut digits: Vec<Surface> = Vec::new();
         for path in SCORE_SPRITE_PATHS.iter() {
@@ -145,11 +122,13 @@ impl Score<'_> {
         }
     }
 
+    /// Get the current score from the game state
     pub fn update(&mut self, logic: &Logic) {
         self.left = logic.score.left();
         self.right = logic.score.right();
     }
 
+    /// Draw the score on the scree, first selecting the right sprites from the digit, then showing it.
     pub fn draw(&self, canvas: &mut WindowCanvas) {
         let left_digit = &self.digits[(self.left % 10) as usize];
         let right_digit = &self.digits[(self.right % 10) as usize];
@@ -164,17 +143,16 @@ impl Score<'_> {
         let c_dim = canvas.output_size().unwrap();
         let cw = c_dim.0;
 
-
         canvas.copy(
             left_texture,
             Rect::new(0, 0, w, h),
-            Rect::new(((cw/4) - (w/2)) as i32, 50, w, h),
+            Rect::new(((cw / 4) - (w / 2)) as i32, 50, w, h),
         ).unwrap();
 
         canvas.copy(
             right_texture,
             Rect::new(0, 0, w, h),
-            Rect::new(((3*cw/4) - (w/2)) as i32, 50, w, h),
+            Rect::new(((3 * cw / 4) - (w / 2)) as i32, 50, w, h),
         ).unwrap();
     }
 }

@@ -12,6 +12,7 @@ pub fn rand(min:i32, max : i32) -> i32{
     rand as i32 + min
 }
 
+/// Random boolean, like a coin toss.
 pub fn flip()->bool{
     if rand(0,1) == 1 {
         return true;

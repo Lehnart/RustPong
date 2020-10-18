@@ -6,14 +6,14 @@ mod logic;
 
 use std::time::SystemTime;
 
-use graphics::Graphics;
-use graphics::Window;
 use logic::Logic;
 use audio::Audio;
 use event::handle_event;
 use collide::Collide;
 
 use engine::audio::init_audio;
+use crate::graphics::Graphics;
+use engine::graphics::Window;
 
 fn main() {
 
@@ -23,7 +23,7 @@ fn main() {
     let mut collide = Collide::new(&audio);
 
     let mut window = Window::new(600, 600);
-    let mut graphics = Graphics::new(&window.canvas);
+    let mut graphics = Graphics::new();
 
 
     let mut previous = SystemTime::now();
@@ -48,8 +48,8 @@ fn main() {
 
         audio.update(&collide);
 
-        graphics.update(&logic);
-        graphics.draw(&mut window.canvas);
+        graphics.update(&logic,&window);
+        graphics.draw(&mut window);
     }
 }
 

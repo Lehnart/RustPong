@@ -14,7 +14,7 @@ pub const BALL_SPEED: f32 = 0.5;
 
 pub const SCORE_MAX: u8 = 10;
 
-/// Score of each of the player in a pong game.
+/// Score of both players.
 ///
 /// Score in pong is one score per player.
 /// Each player is represented by a side of the game, left or right.
@@ -70,7 +70,7 @@ impl Score {
     }
 }
 
-/// A racket represents a player in pong game.
+/// A racket represents a player in the game.
 ///
 /// A racket is represented as a solid, meaning a rect with a speed.
 /// It can be moved by the player.
@@ -177,7 +177,7 @@ impl AsRect for Ball {
     }
 }
 
-/// Logic is a structure that contains all entities from a pong game.
+/// Logic is a structure that contains all entities from the game.
 ///
 /// It contains the two rackets and the ball.
 /// There is also the current score.

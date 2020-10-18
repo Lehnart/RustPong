@@ -3,6 +3,7 @@ pub mod geometry;
 pub mod random;
 pub mod collide;
 pub mod audio;
+pub mod graphics;
 
 pub mod engine{}
 #[cfg(test)]
