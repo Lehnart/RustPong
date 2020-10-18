@@ -46,8 +46,6 @@ fn main() {
         collide.collide_ball_and_wall(&mut logic);
         collide.collide(&mut logic, dt);
 
-        audio.update(&collide);
-
         graphics.update(&logic,&window);
         graphics.draw(&mut window);
     }

@@ -11,7 +11,6 @@ enum Dir{
 }
 
 pub struct Collide<'a>{
-    is_collide : bool,
     audio : &'a Audio
 }
 
@@ -19,13 +18,8 @@ impl Collide<'_>{
 
     pub fn new(audio: &Audio)->Collide {
         Collide{
-            is_collide:false,
             audio
         }
-    }
-
-    pub fn is_collide(&self) -> bool {
-        self.is_collide
     }
 
     pub fn collide_ball_and_wall(&mut self, logic: &mut Logic){
@@ -52,9 +46,10 @@ impl Collide<'_>{
         };
     }
 
+    /// Handle the collision between the rackets and the ball
+    ///
+    /// TODO Very complicated function that needs to be simplified
     pub fn collide(&mut self, logic: &mut Logic, dt: f32) {
-
-        self.is_collide = false;
 
         let ball = logic.ball.solid();
         let left_racket: Rect = logic.left_racket.as_rect();
@@ -89,7 +84,7 @@ impl Collide<'_>{
         match dir {
             Dir::Left | Dir::Right =>{
 
-                self.is_collide = true;
+                self.audio.play_racket_bounce();
 
                 let ball = logic.ball.m_solid();
                 let vx = ball.vel().mag()*angle.cos();

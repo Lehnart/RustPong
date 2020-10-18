@@ -17,12 +17,6 @@ impl Audio {
         }
     }
 
-    pub fn update(&self, collide: &Collide) {
-        if collide.is_collide() {
-            self.play_racket_bounce();
-        }
-    }
-
     pub fn play_wall_bounce(&self) {
         sdl2::mixer::Channel::all().play(&self.wall_bounce, 0).unwrap();
     }
