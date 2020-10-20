@@ -67,8 +67,8 @@ impl Velocity {
 }
 
 pub struct Solid {
-    pos: Position,
-    vel: Velocity,
+    pub pos: Position,
+    pub vel: Velocity,
     w: f32,
     h: f32,
     limit: Rect,
@@ -95,22 +95,6 @@ impl Solid {
         } else if self.pos.y() + self.h > self.limit.y1() {
             self.pos.set_y(self.limit.y1() - self.h);
         }
-    }
-
-    pub fn vel(&self) -> &Velocity {
-        &self.vel
-    }
-
-    pub fn m_vel(&mut self) -> &mut Velocity {
-        &mut self.vel
-    }
-
-    pub fn pos(&self) -> &Position {
-        &self.pos
-    }
-
-    pub fn m_pos(&mut self) -> &mut Position {
-        &mut self.pos
     }
 }
 

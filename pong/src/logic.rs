@@ -106,14 +106,14 @@ impl Racket {
 
     /// To make the racket start moving.
     pub fn accelerate(&mut self) {
-        let pv = self.solid.vel().copy();
-        self.solid.m_vel().set_vy(pv.vy()+RACKET_SPEED);
+        let pv = self.solid.vel.copy();
+        self.solid.vel.set_vy(pv.vy()+RACKET_SPEED);
     }
 
     /// To make the racket stop moving.
     pub fn decelerate(&mut self) {
-        let pv = self.solid.vel().copy();
-        self.solid.m_vel().set_vy(pv.vy()-RACKET_SPEED);
+        let pv = self.solid.vel.copy();
+        self.solid.vel.set_vy(pv.vy()-RACKET_SPEED);
     }
 
     /// Compute the bounce angle of the ball on the racket
@@ -177,24 +177,24 @@ impl Ball {
 
     /// Reflect ball from the wall.
     pub fn reflect(&mut self, y0 : f32) {
-        self.solid.m_pos().set_y(y0);
+        self.solid.pos.set_y(y0);
 
-        let vy = self.solid.m_vel().vy();
-        self.solid.m_vel().set_vy(-vy);
+        let vy = self.solid.vel.vy();
+        self.solid.vel.set_vy(-vy);
     }
 
     /// Bounce at a given angle.
     pub fn bounce(&mut self, angle : f32, x_shift : f32){
 
         // Shift the ball outside the collision
-        let x = self.solid.pos().x();
-        self.solid.m_pos().set_x( x+ x_shift);
+        let x = self.solid.pos.x();
+        self.solid.pos.set_x( x+ x_shift);
 
         // Set the new speed
-        let vx = self.solid.vel().mag() * angle.cos();
-        let vy = self.solid.vel().mag() * angle.sin();
-        self.solid.m_vel().set_vx(vx);
-        self.solid.m_vel().set_vy(vy);
+        let vx = self.solid.vel.mag() * angle.cos();
+        let vy = self.solid.vel.mag() * angle.sin();
+        self.solid.vel.set_vx(vx);
+        self.solid.vel.set_vy(vy);
     }
 }
 
