@@ -95,6 +95,13 @@ impl Solid {
         } else if self.pos.y() + self.h > self.limit.y1() {
             self.pos.set_y(self.limit.y1() - self.h);
         }
+
+        if self.pos.x() < self.limit.x0() {
+            self.pos.set_x(self.limit.x0());
+        } else if self.pos.x() + self.w > self.limit.x1() {
+            self.pos.set_x(self.limit.x1() - self.w);
+        }
+
     }
 }
 

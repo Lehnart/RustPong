@@ -1,4 +1,4 @@
-use sdl2::render::WindowCanvas;
+use sdl2::render::{WindowCanvas};
 use sdl2::EventPump;
 use sdl2::rect::Rect;
 use crate::geometry;
@@ -48,17 +48,19 @@ impl Window {
 
 pub struct Sprite {
     pub rect: Rect,
+    pub color: Color,
 }
 
 impl Sprite {
-    pub fn new(x: i32, y: i32, w: u32, h: u32) -> Sprite {
+    pub fn new(x: i32, y: i32, w: u32, h: u32, color : Color) -> Sprite {
         Sprite {
-            rect: Rect::new(x, y, w, h)
+            rect: Rect::new(x, y, w, h),
+            color
         }
     }
 
-    pub fn default() -> Sprite{
-        Sprite::new(0,0,1,1)
+    pub fn default(color : Color) -> Sprite{
+        Sprite::new(0,0,1,1, color)
     }
 
     pub fn update(&mut self, logic_rect: geometry::Rect, canvas_width: u32, canvas_height: u32) {
@@ -66,5 +68,10 @@ impl Sprite {
         self.rect.x = (logic_rect.x0() * canvas_width as f32) as i32;
         self.rect.set_width((logic_rect.w() * canvas_width as f32) as u32);
         self.rect.set_height((logic_rect.h() * canvas_height as f32) as u32);
+    }
+
+    pub fn draw(&self, canvas : &mut WindowCanvas){
+        canvas.set_draw_color(self.color);
+        canvas.fill_rect(self.rect).unwrap();
     }
 }
