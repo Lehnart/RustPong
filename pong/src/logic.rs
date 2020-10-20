@@ -3,6 +3,7 @@ use engine::geometry::{AsRect, Rect};
 use engine::physics::{Velocity, Solid, Position};
 use engine::random::{rand, flip};
 use crate::audio::Audio;
+use std::f32::consts::PI;
 
 pub const RACKET_HEIGHT: f32 = 0.10;
 pub const RACKET_WIDTH: f32 = 0.01;
@@ -11,6 +12,9 @@ const RACKET_SPEED: f32 = 0.75;
 
 pub const BALL_DIM: f32 = 0.01;
 pub const BALL_SPEED: f32 = 0.5;
+
+pub const BOUNCE_ANGLE_MIN : f32 = -35.;
+pub const BOUNCE_ANGLE_MAX : f32 = 35.;
 
 pub const SCORE_MAX: u8 = 10;
 
@@ -102,12 +106,27 @@ impl Racket {
 
     /// To make the racket start moving.
     pub fn accelerate(&mut self) {
-        self.solid.add_v(&Velocity::new(0., RACKET_SPEED));
+        let pv = self.solid.vel().copy();
+        self.solid.m_vel().set_vy(pv.vy()+RACKET_SPEED);
     }
 
     /// To make the racket stop moving.
     pub fn decelerate(&mut self) {
-        self.solid.add_v(&Velocity::new(0., -RACKET_SPEED));
+        let pv = self.solid.vel().copy();
+        self.solid.m_vel().set_vy(pv.vy()-RACKET_SPEED);
+    }
+
+    /// Compute the bounce angle of the ball on the racket
+    pub fn get_bounce_angle(&self, x:f32, y:f32) -> f32 {
+        let rect = self.as_rect();
+        let rel_y = (y - rect.y0() - (RACKET_HEIGHT/2.)) / RACKET_HEIGHT*2.;
+
+        let mut angle = (rel_y*(BOUNCE_ANGLE_MAX - BOUNCE_ANGLE_MIN)).to_radians();
+        if x > 0.5{
+            angle = BOUNCE_ANGLE_MAX-angle + BOUNCE_ANGLE_MIN;
+            angle += PI;
+        }
+        angle
     }
 }
 
@@ -156,17 +175,26 @@ impl Ball {
         &self.solid
     }
 
-    pub fn m_solid(&mut self)-> &mut Solid{
-        &mut self.solid
-    }
+    /// Reflect ball from the wall.
+    pub fn reflect(&mut self, y0 : f32) {
+        self.solid.m_pos().set_y(y0);
 
-    pub fn set_y(&mut self, y : f32){
-        self.solid.m_pos().set_y(y);
-    }
-
-    pub fn reflect(&mut self) {
         let vy = self.solid.m_vel().vy();
         self.solid.m_vel().set_vy(-vy);
+    }
+
+    /// Bounce at a given angle.
+    pub fn bounce(&mut self, angle : f32, x_shift : f32){
+
+        // Shift the ball outside the collision
+        let x = self.solid.pos().x();
+        self.solid.m_pos().set_x( x+ x_shift);
+
+        // Set the new speed
+        let vx = self.solid.vel().mag() * angle.cos();
+        let vy = self.solid.vel().mag() * angle.sin();
+        self.solid.m_vel().set_vx(vx);
+        self.solid.m_vel().set_vy(vy);
     }
 }
 

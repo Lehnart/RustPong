@@ -42,6 +42,13 @@ impl Velocity {
         }
     }
 
+    pub fn copy(&self) -> Velocity {
+        Velocity {
+            vx: self.vx,
+            vy: self.vy,
+        }
+    }
+
     pub fn vx(&self) -> f32 {
         self.vx
     }
@@ -104,11 +111,6 @@ impl Solid {
 
     pub fn m_pos(&mut self) -> &mut Position {
         &mut self.pos
-    }
-
-    pub fn add_v(&mut self, vel: &Velocity) {
-        self.vel.set_vx(self.vel.vx + vel.vx);
-        self.vel.set_vy(self.vel.vy + vel.vy);
     }
 }
 

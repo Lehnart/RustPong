@@ -1,7 +1,5 @@
 use sdl2::mixer::{Chunk};
 
-use crate::collide::Collide;
-
 pub struct Audio {
     wall_bounce: Chunk,
     racket_bounce: Chunk,

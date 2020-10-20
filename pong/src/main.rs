@@ -44,7 +44,7 @@ fn main() {
         }
 
         collide.collide_ball_and_wall(&mut logic);
-        collide.collide(&mut logic, dt);
+        collide.collide_ball_and_racket(&mut logic);
 
         graphics.update(&logic,&window);
         graphics.draw(&mut window);
