@@ -159,7 +159,7 @@ impl Ball {
 
         let pos = Position::new(x,y);
         let vel = Velocity::new(random_angle.cos() * BALL_SPEED,random_angle.sin() * BALL_SPEED);
-        let limit = Rect::new(-1.,-1.,2.,2.);
+        let limit = Rect::new(-0.1,0.,1.2,1.1);
 
         Ball {
             solid: Solid::new(pos, vel, BALL_DIM, BALL_DIM, limit)
@@ -169,10 +169,6 @@ impl Ball {
     /// Ball update is just the solid physics updating.
     fn update(&mut self, dt: f32) {
         self.solid.update(dt);
-    }
-
-    pub fn solid(&self)-> & Solid{
-        &self.solid
     }
 
     /// Reflect ball from the wall.

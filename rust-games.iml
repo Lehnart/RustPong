@@ -10,7 +10,9 @@
       <sourceFolder url="file://$MODULE_DIR$/engine/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/pong/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/arkanoid/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/breakout/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/arkanoid/target" />
+      <excludeFolder url="file://$MODULE_DIR$/breakout/target" />
       <excludeFolder url="file://$MODULE_DIR$/engine/target" />
       <excludeFolder url="file://$MODULE_DIR$/pong/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />

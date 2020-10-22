@@ -1,5 +1,6 @@
 use engine::physics::{Solid, Position, Velocity};
 use engine::geometry::{Rect, AsRect};
+use engine::random::rand;
 
 pub const RACKET_WIDTH :f32 = 0.08;
 pub const RACKET_HEIGHT :f32 = 0.02;
@@ -8,6 +9,21 @@ pub const RACKET_SPEED : f32 = 0.75;
 
 pub const BOARD_LEFT_LIMIT_X : f32 = 0.015;
 pub const BOARD_RIGHT_LIMIT_X : f32 = 0.985;
+
+pub const BLOCK_WIDTH : f32 = 0.06;
+pub const BLOCK_HEIGHT : f32 = 0.015;
+pub const BLOCK_STEP_X : f32 = 0.01;
+pub const BLOCK_STEP_Y : f32 = 0.01;
+pub const BLOCK_ROW_N : u8 = 8;
+pub const BLOCK_COL_N : u8 = 14;
+
+pub const BLOCKS_X0 : f32 = 0.015;
+pub const BLOCKS_Y0 : f32 = 0.2;
+
+pub const BALL_X0 : f32 = 0.5;
+pub const BALL_Y0 : f32 = 0.5;
+pub const BALL_SPEED: f32 = 0.5;
+pub const BALL_DIM: f32 = 0.01;
 
 pub struct Racket {
     solid: Solid
@@ -54,12 +70,118 @@ impl AsRect for Racket {
     }
 }
 
+/// Represent a block which can be destroyed on collision with ball
+pub struct Block{
+    solid : Solid
+}
+
+impl Block{
+    pub fn new(x:f32,y:f32)-> Block{
+        Block{solid : Solid::fixed(x,y,BLOCK_WIDTH,BLOCK_HEIGHT)}
+    }
+}
+
+impl AsRect for Block {
+    fn as_rect(&self) -> Rect {
+        self.solid.as_rect()
+    }
+}
+
+/// Represents all the blocks in one struct to handle drawing and collision more easily
+pub struct Blocks{
+    blocks : Vec<Block>
+}
+
+impl Blocks{
+    pub fn new() -> Blocks{
+        let mut blocks: Vec<Block> = Vec::new();
+        for i in 0..BLOCK_ROW_N {
+            for j in 0..BLOCK_COL_N{
+                blocks.push(
+                    Block::new(
+                        j as f32 *(BLOCK_WIDTH+BLOCK_STEP_X) + BLOCKS_X0,
+                        i as f32 *(BLOCK_HEIGHT+BLOCK_STEP_Y) + BLOCKS_Y0
+                    )
+                );
+            }
+        }
+        Blocks{ blocks }
+    }
+
+    pub fn get(&self, i:usize) -> &Block{
+        &self.blocks[i]
+    }
+}
+
+/// The ball which move across the board, between rackets.
+///
+/// A ball is represented as a solid.
+/// It is reflected on rackets.
+///
+pub struct Ball {
+    solid: Solid
+}
+
+impl Ball {
+
+    /// Create a new ball with a random direction
+    fn new() -> Ball {
+        let random_angle= (rand(90-45,90+45) as f32).to_radians();
+        let pos = Position::new(BALL_X0,BALL_Y0);
+        let vel = Velocity::new(random_angle.cos() * BALL_SPEED,random_angle.sin() * BALL_SPEED);
+        let limit = Rect::from_2_points(0., 0.,1., 2.);
+
+        Ball {
+            solid: Solid::new(pos, vel, BALL_DIM, BALL_DIM, limit)
+        }
+    }
+
+    /// Ball update is just the solid physics updating.
+    fn update(&mut self, dt: f32) {
+        self.solid.update(dt);
+    }
+
+    /// Reflect ball
+    pub fn reflect_x(&mut self, x0 : f32) {
+        self.solid.pos.set_x(x0);
+        let vx = self.solid.vel.vx();
+        self.solid.vel.set_vx(-vx);
+    }
+    pub fn reflect_y(&mut self, y0 : f32) {
+        self.solid.pos.set_y(y0);
+        let vy = self.solid.vel.vy();
+        self.solid.vel.set_vy(-vy);
+    }
+
+    /// Bounce at a given angle.
+    pub fn bounce(&mut self, angle : f32, y_shift : f32){
+
+        // Shift the ball outside the collision
+        let y = self.solid.pos.y();
+        self.solid.pos.set_y( y+ y_shift);
+
+        // Set the new speed
+        let vx = self.solid.vel.mag() * angle.cos();
+        let vy = self.solid.vel.mag() * angle.sin();
+        self.solid.vel.set_vx(vx);
+        self.solid.vel.set_vy(vy);
+    }
+}
+
+/// Converting the ball to a Rect make it more easy for collision and drawing.
+impl AsRect for Ball {
+    fn as_rect(&self) -> Rect {
+        self.solid.as_rect()
+    }
+}
+
 /// Logic is a structure that contains all entities from the game.
 ///
 ///
 pub struct Logic {
     pub racket: Racket,
-
+    pub blocks: Blocks,
+    pub ball: Ball,
     is_over: bool,
 }
 
@@ -68,6 +190,8 @@ impl Logic {
     pub fn new() -> Logic {
         Logic {
             racket: Racket::new(),
+            blocks: Blocks::new(),
+            ball: Ball::new(),
             is_over: false
         }
     }
@@ -75,6 +199,7 @@ impl Logic {
     /// Update each entity of a delta of time and check if the game is over.
     pub fn update(&mut self, dt: f32) {
         self.racket.update(dt);
+        self.ball.update(dt);
     }
 
     /// Set the game over

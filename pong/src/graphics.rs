@@ -40,9 +40,9 @@ impl Graphics<'_> {
     /// Init the dynamic elements required to draw the game
     pub fn new<'a>() -> Graphics<'a> {
         Graphics {
-            left_racket: Sprite::default(),
-            right_racket: Sprite::default(),
-            ball: Sprite::default(),
+            left_racket: Sprite::default(Color::WHITE),
+            right_racket: Sprite::default(Color::WHITE),
+            ball: Sprite::default(Color::WHITE),
             score: Score::new(),
         }
     }

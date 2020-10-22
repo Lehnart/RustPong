@@ -22,6 +22,15 @@ impl Rect{
         }
     }
 
+    pub fn default()->Rect{
+        Rect{
+            x : 0.,
+            y : 0.,
+            w : 1.,
+            h : 1.
+        }
+    }
+
     pub fn x0(&self)-> f32{
         self.x
     }

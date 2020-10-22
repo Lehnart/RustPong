@@ -41,7 +41,12 @@ impl Velocity {
             vy,
         }
     }
-
+    pub fn default() -> Velocity {
+        Velocity {
+            vx:0.,
+            vy:0.,
+        }
+    }
     pub fn copy(&self) -> Velocity {
         Velocity {
             vx: self.vx,
@@ -83,6 +88,20 @@ impl Solid {
             w,
             h,
             limit,
+        }
+    }
+
+    pub fn fixed(x : f32, y: f32, w: f32, h: f32) -> Solid
+    {
+        let pos = Position::new(x,y);
+        let vel = Velocity::default();
+
+        Solid {
+            pos,
+            vel,
+            w,
+            h,
+            limit : Rect::default(),
         }
     }
 

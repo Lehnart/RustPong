@@ -38,7 +38,7 @@ impl Collide<'_> {
 
     /// Handle the collision between the rackets and the ball
     pub fn collide_ball_and_racket(&mut self, logic: &mut Logic) {
-        let ball_rect = logic.ball.solid().as_rect();
+        let ball_rect = logic.ball.as_rect();
         let left_racket: Rect = logic.left_racket.as_rect();
         let right_racket: Rect = logic.right_racket.as_rect();
 
