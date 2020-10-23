@@ -1,6 +1,7 @@
 mod logic;
 mod event;
 mod graphics;
+mod collide;
 
 use std::time::SystemTime;
 
@@ -9,6 +10,7 @@ use engine::graphics::Window;
 use crate::logic::Logic;
 use crate::event::handle_event;
 use crate::graphics::Graphics;
+use crate::collide::{collide_ball_and_racket, collide_ball_and_wall};
 
 fn main() {
 
@@ -34,6 +36,9 @@ fn main() {
         if logic.is_over(){
             break 'game_loop
         }
+
+        collide_ball_and_racket(&mut logic);
+        collide_ball_and_wall(&mut logic);
 
         graphics.update(&logic,&window);
         graphics.draw(&mut window);

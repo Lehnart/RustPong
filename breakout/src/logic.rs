@@ -9,6 +9,7 @@ pub const RACKET_SPEED : f32 = 0.75;
 
 pub const BOARD_LEFT_LIMIT_X : f32 = 0.015;
 pub const BOARD_RIGHT_LIMIT_X : f32 = 0.985;
+pub const BOARD_TOP_LIMIT_Y : f32 = 0.015;
 
 pub const BLOCK_WIDTH : f32 = 0.06;
 pub const BLOCK_HEIGHT : f32 = 0.015;
@@ -24,6 +25,10 @@ pub const BALL_X0 : f32 = 0.5;
 pub const BALL_Y0 : f32 = 0.5;
 pub const BALL_SPEED: f32 = 0.5;
 pub const BALL_DIM: f32 = 0.01;
+
+pub const BOUNCE_ANGLE_MAX : f32 = 270.+45.;
+pub const BOUNCE_ANGLE_MIN : f32 = 270.-45.;
+
 
 pub struct Racket {
     solid: Solid
@@ -61,6 +66,14 @@ impl Racket {
         self.solid.update(dt);
     }
 
+
+    /// Compute the bounce angle of the ball on the racket
+    pub fn get_bounce_angle(&self, x:f32, _y:f32) -> f32 {
+        let rect = self.as_rect();
+        let rel_x = (x - rect.x0()) / RACKET_WIDTH;
+        let angle = ((rel_x*(BOUNCE_ANGLE_MAX - BOUNCE_ANGLE_MIN)) + BOUNCE_ANGLE_MIN).to_radians();
+        angle
+    }
 }
 
 /// Converting the racket to a Rect make it more easy for collision and drawing.

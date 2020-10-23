@@ -1,5 +1,5 @@
 use engine::graphics::{Sprite, Window};
-use crate::logic::{Logic, BOARD_LEFT_LIMIT_X, BOARD_RIGHT_LIMIT_X, BLOCK_ROW_N, BLOCK_COL_N};
+use crate::logic::{Logic, BOARD_LEFT_LIMIT_X, BOARD_RIGHT_LIMIT_X, BLOCK_ROW_N, BLOCK_COL_N, BOARD_TOP_LIMIT_Y};
 use engine::geometry::{AsRect, Rect};
 use sdl2::pixels::Color;
 
@@ -14,6 +14,7 @@ pub struct Graphics {
     racket: Sprite,
     left_limit: Sprite,
     right_limit: Sprite,
+    top_limit: Sprite,
     blocks : Vec<Sprite>,
     ball : Sprite,
 }
@@ -33,6 +34,7 @@ impl Graphics {
             racket: Sprite::default(RACKET_COLOR),
             left_limit: Sprite::default(LIMIT_COLOR),
             right_limit: Sprite::default(LIMIT_COLOR),
+            top_limit: Sprite::default(LIMIT_COLOR),
             ball : Sprite::default(BALL_COLOR),
             blocks
         }
@@ -47,6 +49,7 @@ impl Graphics {
         self.ball.update(logic.ball.as_rect(), w, h);
         self.left_limit.update(Rect::from_2_points(0.,0., BOARD_LEFT_LIMIT_X, 1.), w, h);
         self.right_limit.update(Rect::from_2_points(BOARD_RIGHT_LIMIT_X,0., 1.01, 1.), w, h);
+        self.top_limit.update(Rect::from_2_points(0.,0., 1.0, BOARD_TOP_LIMIT_Y), w, h);
 
         for i in 0..self.blocks.len(){
             let block_logic = logic.blocks.get(i);
@@ -69,6 +72,7 @@ impl Graphics {
         self.ball.draw(canvas);
         self.left_limit.draw(canvas);
         self.right_limit.draw(canvas);
+        self.top_limit.draw(canvas);
         for b in &self.blocks{
             b.draw(canvas);
         }
