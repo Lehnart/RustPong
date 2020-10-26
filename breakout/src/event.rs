@@ -11,6 +11,10 @@ pub fn handle_event(event:Event, logic: &mut Logic){
             logic.over();
         }
 
+        Event::KeyDown { keycode: Some(Keycode::Space), .. } => {
+            logic.ball.reset();
+        }
+
         Event::KeyDown { keycode: Some(Keycode::Left), repeat: false, .. } => {
             logic.racket.decelerate();
         }

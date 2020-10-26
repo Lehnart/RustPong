@@ -10,7 +10,7 @@ use engine::graphics::Window;
 use crate::logic::Logic;
 use crate::event::handle_event;
 use crate::graphics::Graphics;
-use crate::collide::{collide_ball_and_racket, collide_ball_and_wall};
+use crate::collide::{collide_ball_and_racket, collide_ball_and_wall, collide_ball_and_blocks};
 
 fn main() {
 
@@ -39,6 +39,7 @@ fn main() {
 
         collide_ball_and_racket(&mut logic);
         collide_ball_and_wall(&mut logic);
+        collide_ball_and_blocks(&mut logic);
 
         graphics.update(&logic,&window);
         graphics.draw(&mut window);

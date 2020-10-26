@@ -22,16 +22,16 @@ pub fn collide_ball_and_wall(logic: &mut Logic) {
     let ball = logic.ball.as_rect();
     let left_wall = Rect::from_2_points(0., 0., BOARD_LEFT_LIMIT_X, 1.);
     match collide(&ball, &left_wall) {
-        Some(_rect) => {
-            logic.ball.reflect_x(BOARD_LEFT_LIMIT_X);
+        Some(rect) => {
+            logic.ball.reflect_x(rect.w());
         }
         None => (),
     };
 
     let right_wall = Rect::from_2_points(BOARD_RIGHT_LIMIT_X, 0., 1., 1.);
     match collide(&ball, &right_wall) {
-        Some(_rect) => {
-            logic.ball.reflect_x(BOARD_RIGHT_LIMIT_X - BALL_DIM);
+        Some(rect) => {
+            logic.ball.reflect_x(-rect.w());
         }
         None => (),
     };
@@ -43,4 +43,36 @@ pub fn collide_ball_and_wall(logic: &mut Logic) {
         }
         None => (),
     };
+}
+
+pub fn collide_ball_and_blocks(logic: &mut Logic) {
+    let ball = logic.ball.as_rect();
+
+    for block in &logic.blocks.block_vec {
+        let block_rec = block.as_rect();
+
+        match collide(&ball, &block_rec) {
+            Some(rect) => {
+                if rect.w() > rect.h() {
+                    let mut y_shift = rect.h();
+                    if rect.yc() < block_rec.yc(){
+                        y_shift = - y_shift;
+                    }
+                    logic.ball.reflect_y(y_shift);
+                }
+
+               else {
+                    let mut x_shift = rect.w();
+                    if rect.xc() < block_rec.xc(){
+                        x_shift = - x_shift;
+                    }
+                    logic.ball.reflect_x(x_shift);
+                }
+            }
+            None => (),
+        };
+    }
+
+
+
 }

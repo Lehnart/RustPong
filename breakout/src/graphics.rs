@@ -53,7 +53,7 @@ impl Graphics {
 
         for i in 0..self.blocks.len(){
             let block_logic = logic.blocks.get(i);
-            let  block_graphics = &mut self.blocks[i];
+            let block_graphics = &mut self.blocks[i];
             block_graphics.update(block_logic.as_rect(), w, h);
         }
     }

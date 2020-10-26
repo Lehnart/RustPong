@@ -26,8 +26,8 @@ pub const BALL_Y0 : f32 = 0.5;
 pub const BALL_SPEED: f32 = 0.5;
 pub const BALL_DIM: f32 = 0.01;
 
-pub const BOUNCE_ANGLE_MAX : f32 = 270.+45.;
-pub const BOUNCE_ANGLE_MIN : f32 = 270.-45.;
+pub const BOUNCE_ANGLE_MAX : f32 = 270.+60.;
+pub const BOUNCE_ANGLE_MIN : f32 = 270.-60.;
 
 
 pub struct Racket {
@@ -102,7 +102,7 @@ impl AsRect for Block {
 
 /// Represents all the blocks in one struct to handle drawing and collision more easily
 pub struct Blocks{
-    blocks : Vec<Block>
+    pub block_vec: Vec<Block>
 }
 
 impl Blocks{
@@ -118,11 +118,11 @@ impl Blocks{
                 );
             }
         }
-        Blocks{ blocks }
+        Blocks{ block_vec: blocks }
     }
 
     pub fn get(&self, i:usize) -> &Block{
-        &self.blocks[i]
+        &self.block_vec[i]
     }
 }
 
@@ -155,13 +155,15 @@ impl Ball {
     }
 
     /// Reflect ball
-    pub fn reflect_x(&mut self, x0 : f32) {
-        self.solid.pos.set_x(x0);
+    pub fn reflect_x(&mut self, x_shift : f32) {
+        let x = self.solid.pos.x();
+        self.solid.pos.set_x(x+x_shift);
         let vx = self.solid.vel.vx();
         self.solid.vel.set_vx(-vx);
     }
-    pub fn reflect_y(&mut self, y0 : f32) {
-        self.solid.pos.set_y(y0);
+    pub fn reflect_y(&mut self, y_shift : f32) {
+        let y = self.solid.pos.y();
+        self.solid.pos.set_y(y+y_shift);
         let vy = self.solid.vel.vy();
         self.solid.vel.set_vy(-vy);
     }
@@ -178,6 +180,14 @@ impl Ball {
         let vy = self.solid.vel.mag() * angle.sin();
         self.solid.vel.set_vx(vx);
         self.solid.vel.set_vy(vy);
+    }
+
+    pub fn reset(&mut self){
+        let random_angle= (rand(90-45,90+45) as f32).to_radians();
+        let pos = Position::new(BALL_X0,BALL_Y0);
+        let vel = Velocity::new(random_angle.cos() * BALL_SPEED,random_angle.sin() * BALL_SPEED);
+        self.solid.vel = vel;
+        self.solid.pos = pos;
     }
 }
 
