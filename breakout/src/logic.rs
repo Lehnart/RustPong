@@ -85,13 +85,24 @@ impl AsRect for Racket {
 
 /// Represent a block which can be destroyed on collision with ball
 pub struct Block{
-    solid : Solid
+    solid : Solid,
+    value : u8,
+    is_destroyed : bool
 }
 
 impl Block{
-    pub fn new(x:f32,y:f32)-> Block{
-        Block{solid : Solid::fixed(x,y,BLOCK_WIDTH,BLOCK_HEIGHT)}
+    pub fn new(x:f32,y:f32, value:u8)-> Block{
+
+        Block{
+            solid : Solid::fixed(x,y,BLOCK_WIDTH,BLOCK_HEIGHT),
+            value,
+            is_destroyed : false
+        }
     }
+
+    pub fn get_value(&self) -> u8 { self.value }
+    pub fn destroy(&mut self){ self.is_destroyed = true}
+    pub fn is_destroyed(&self) -> bool { self.is_destroyed }
 }
 
 impl AsRect for Block {
@@ -113,7 +124,8 @@ impl Blocks{
                 blocks.push(
                     Block::new(
                         j as f32 *(BLOCK_WIDTH+BLOCK_STEP_X) + BLOCKS_X0,
-                        i as f32 *(BLOCK_HEIGHT+BLOCK_STEP_Y) + BLOCKS_Y0
+                        i as f32 *(BLOCK_HEIGHT+BLOCK_STEP_Y) + BLOCKS_Y0,
+                        (BLOCK_ROW_N-i-1)/2 as u8
                     )
                 );
             }

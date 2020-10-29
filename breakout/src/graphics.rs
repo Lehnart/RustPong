@@ -5,7 +5,7 @@ use sdl2::pixels::Color;
 
 pub const RACKET_COLOR :Color = Color{ r:62,g:117,b:207,a:0 };
 pub const LIMIT_COLOR :Color = Color::WHITE;
-pub const BLOCK_COLORS : [Color;8] =[Color::RED, Color::RED, Color::BLUE, Color::BLUE, Color::GREEN, Color::GREEN, Color::YELLOW, Color::YELLOW];
+pub const BLOCK_COLORS : [Color;4] =[Color::YELLOW, Color::GREEN,Color::BLUE,Color::RED];
 pub const BALL_COLOR : Color = Color::WHITE;
 
 /// Struct containing all basic dynamic elements required to draw the game.
@@ -24,9 +24,9 @@ impl Graphics {
     /// Init the dynamic elements required to draw the game
     pub fn new() -> Graphics {
         let mut blocks: Vec<Sprite> = Vec::new();
-        for i in 0..BLOCK_ROW_N {
+        for _i in 0..BLOCK_ROW_N {
             for _j in 0..BLOCK_COL_N{
-                blocks.push( Sprite::default(BLOCK_COLORS[i as usize]));
+                blocks.push( Sprite::default(Color::WHITE));
             }
         }
 
@@ -54,7 +54,14 @@ impl Graphics {
         for i in 0..self.blocks.len(){
             let block_logic = logic.blocks.get(i);
             let block_graphics = &mut self.blocks[i];
-            block_graphics.update(block_logic.as_rect(), w, h);
+
+            if block_logic.is_destroyed(){
+                block_graphics.hide();
+            }
+            else {
+                block_graphics.color = BLOCK_COLORS[block_logic.get_value() as usize];
+                block_graphics.update(block_logic.as_rect(), w, h);
+            }
         }
     }
 

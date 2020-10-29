@@ -49,13 +49,15 @@ impl Window {
 pub struct Sprite {
     pub rect: Rect,
     pub color: Color,
+    is_visible : bool
 }
 
 impl Sprite {
     pub fn new(x: i32, y: i32, w: u32, h: u32, color : Color) -> Sprite {
         Sprite {
             rect: Rect::new(x, y, w, h),
-            color
+            color,
+            is_visible : true
         }
     }
 
@@ -71,7 +73,17 @@ impl Sprite {
     }
 
     pub fn draw(&self, canvas : &mut WindowCanvas){
-        canvas.set_draw_color(self.color);
-        canvas.fill_rect(self.rect).unwrap();
+        if self.is_visible {
+            canvas.set_draw_color(self.color);
+            canvas.fill_rect(self.rect).unwrap();
+        }
+    }
+
+    pub fn hide(&mut self){
+        self.is_visible = false;
+    }
+
+    pub fn show(&mut self){
+        self.is_visible = true;
     }
 }

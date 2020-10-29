@@ -2,6 +2,7 @@ mod logic;
 mod event;
 mod graphics;
 mod collide;
+mod audio;
 
 use std::time::SystemTime;
 
@@ -11,10 +12,12 @@ use crate::logic::Logic;
 use crate::event::handle_event;
 use crate::graphics::Graphics;
 use crate::collide::{collide_ball_and_racket, collide_ball_and_wall, collide_ball_and_blocks};
+use crate::audio::Audio;
 
 fn main() {
 
     init_audio();
+    let audio = Audio::new();
     let mut logic = Logic::new();
 
     let mut window = Window::new(600, 600);
@@ -37,9 +40,9 @@ fn main() {
             break 'game_loop
         }
 
-        collide_ball_and_racket(&mut logic);
-        collide_ball_and_wall(&mut logic);
-        collide_ball_and_blocks(&mut logic);
+        collide_ball_and_racket(&mut logic, &audio);
+        collide_ball_and_wall(&mut logic, &audio);
+        collide_ball_and_blocks(&mut logic, &audio);
 
         graphics.update(&logic,&window);
         graphics.draw(&mut window);
