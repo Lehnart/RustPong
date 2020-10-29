@@ -1,4 +1,4 @@
-use crate::logic::{Logic, BOARD_LEFT_LIMIT_X, BOARD_RIGHT_LIMIT_X, BALL_DIM, BOARD_TOP_LIMIT_Y};
+use crate::logic::{Logic, BOARD_LEFT_LIMIT_X, BOARD_RIGHT_LIMIT_X, BOARD_TOP_LIMIT_Y};
 use engine::geometry::{AsRect, Rect};
 use engine::collide::collide;
 use crate::audio::Audio;
