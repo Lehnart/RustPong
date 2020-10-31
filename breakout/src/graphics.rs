@@ -17,7 +17,6 @@ pub const SCORE_POSITION_Y : i32 = 70;
 pub const LIFE_POSITION_X : i32 = 500;
 pub const LIFE_POSITION_Y : i32 = 70;
 
-
 /// Struct containing all basic dynamic elements required to draw the game.
 ///
 pub struct Graphics {
@@ -85,8 +84,7 @@ impl Graphics {
     /// Draw the game.
     ///
     /// Start by clearing the all board.
-    /// Then, it draws the static element : the mid line for instance.
-    /// Finally, it draws each dynamic element and show the canvas
+    /// It draws each dynamic element and show the canvas
     pub fn draw(&self, window: &mut Window, ttf_context : &Sdl2TtfContext) {
 
         window.clear();

@@ -1,5 +1,6 @@
 use sdl2::mixer::{Chunk};
 
+/// Structure containing all the sounds that will be played during the game.
 pub struct Audio {
     wall_bounce: Chunk,
     racket_bounce: Chunk,

@@ -3,7 +3,7 @@ use engine::geometry::{AsRect, Rect};
 use engine::collide::collide;
 use crate::audio::Audio;
 
-/// Handle the collision between the rackets and the ball
+/// Handle the collision between the racket and the ball. It produces a sound when there is a bounce.
 pub fn collide_ball_and_racket(logic: &mut Logic, audio : &Audio) {
     let ball = logic.ball.as_rect();
     let racket = logic.racket.as_rect();
@@ -20,6 +20,8 @@ pub fn collide_ball_and_racket(logic: &mut Logic, audio : &Audio) {
         None => ()
     }
 }
+
+/// Handle the collision between the racket and the ball, producing a sound when it happens.
 pub fn collide_ball_and_wall(logic: &mut Logic, audio : &Audio) {
     let ball = logic.ball.as_rect();
     let left_wall = Rect::from_2_points(0., 0., BOARD_LEFT_LIMIT_X, 1.);
@@ -50,6 +52,7 @@ pub fn collide_ball_and_wall(logic: &mut Logic, audio : &Audio) {
     };
 }
 
+/// Handle the collision between the blocks and the ball, producing a sound when it happens.
 pub fn collide_ball_and_blocks(logic: &mut Logic, audio : &Audio) {
     let ball = logic.ball.as_rect();
 
@@ -84,7 +87,5 @@ pub fn collide_ball_and_blocks(logic: &mut Logic, audio : &Audio) {
             None => (),
         };
     }
-
-
 
 }

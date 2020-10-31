@@ -29,12 +29,18 @@ pub const BALL_DIM: f32 = 0.01;
 pub const BOUNCE_ANGLE_MAX : f32 = 270.+60.;
 pub const BOUNCE_ANGLE_MIN : f32 = 270.-60.;
 
-
+pub const LIFE_STARTING_COUNT : u32 = 3;
+/// The Racket represents the player.
+///
+/// A racket is a rectangle that can be moved from left to right, trying to reach the ball
+/// in order to not let it pass.
 pub struct Racket {
     solid: Solid
 }
 
 impl Racket {
+
+    /// Create a new racket in the center of the board.
     pub fn new() -> Racket {
         let pos = Position::new(0.5-(RACKET_WIDTH/2.), RACKET_Y0);
         let vel = Velocity::new(0.,0.);
@@ -66,7 +72,6 @@ impl Racket {
         self.solid.update(dt);
     }
 
-
     /// Compute the bounce angle of the ball on the racket
     pub fn get_bounce_angle(&self, x:f32, _y:f32) -> f32 {
         let rect = self.as_rect();
@@ -83,7 +88,10 @@ impl AsRect for Racket {
     }
 }
 
-/// Represent a block which can be destroyed on collision with ball
+/// Represent a block which can be destroyed on collision with ball.
+///
+/// The block can be destroyed when collided by the ball.
+/// Each block has a value, which determines the score earned when it is destroyed.
 pub struct Block{
     solid : Solid,
     value : u8,
@@ -91,8 +99,9 @@ pub struct Block{
 }
 
 impl Block{
-    pub fn new(x:f32,y:f32, value:u8)-> Block{
 
+    /// Create a new block add the given position with a given value.
+    pub fn new(x:f32,y:f32, value:u8)-> Block{
         Block{
             solid : Solid::fixed(x,y,BLOCK_WIDTH,BLOCK_HEIGHT),
             value,
@@ -112,11 +121,15 @@ impl AsRect for Block {
 }
 
 /// Represents all the blocks in one struct to handle drawing and collision more easily
+///
+/// Blocks are represented as a vector of blocks
 pub struct Blocks{
     pub block_vec: Vec<Block>
 }
 
 impl Blocks{
+
+    /// Create all the blocks of the game
     pub fn new() -> Blocks{
         let mut blocks: Vec<Block> = Vec::new();
         for i in 0..BLOCK_ROW_N {
@@ -133,6 +146,7 @@ impl Blocks{
         Blocks{ block_vec: blocks }
     }
 
+    /// Get a block at a given index.
     pub fn get(&self, i:usize) -> &Block{
         &self.block_vec[i]
     }
@@ -166,13 +180,15 @@ impl Ball {
         self.solid.update(dt);
     }
 
-    /// Reflect ball
+    /// Reflect ball on x direction
     pub fn reflect_x(&mut self, x_shift : f32) {
         let x = self.solid.pos.x();
         self.solid.pos.set_x(x+x_shift);
         let vx = self.solid.vel.vx();
         self.solid.vel.set_vx(-vx);
     }
+
+    /// Reflect ball on y direction
     pub fn reflect_y(&mut self, y_shift : f32) {
         let y = self.solid.pos.y();
         self.solid.pos.set_y(y+y_shift);
@@ -194,6 +210,7 @@ impl Ball {
         self.solid.vel.set_vy(vy);
     }
 
+    /// Reset ball position at the center of the board
     pub fn reset(&mut self){
         let random_angle= (rand(90-45,90+45) as f32).to_radians();
         let pos = Position::new(BALL_X0,BALL_Y0);
@@ -210,7 +227,9 @@ impl AsRect for Ball {
     }
 }
 
-
+/// The score of the current game.
+///
+/// Score depends on how many blocks have been destroyed and depending on their value.
 pub struct Score {
     current: u32,
 }
@@ -229,21 +248,26 @@ impl Score {
         self.current
     }
 
+    /// Add points to the score.
     pub fn add(&mut self, points : u32)  {
         self.current += points
     }
 
 }
 
+/// The current number of life.
+///
+/// When it reachs 0, the game is over.
 pub struct Life {
     count: u32,
 }
 
 impl Life {
 
+    /// Creating the life counter
     fn new() -> Life {
         Life {
-            count: 3,
+            count: LIFE_STARTING_COUNT,
         }
     }
 
@@ -251,14 +275,13 @@ impl Life {
         self.count
     }
 
+    /// Remove one life from the current count
     pub fn remove(&mut self)  {
         self.count -= 1;
     }
-
 }
 
 /// Logic is a structure that contains all entities from the game.
-///
 ///
 pub struct Logic {
     pub racket: Racket,
