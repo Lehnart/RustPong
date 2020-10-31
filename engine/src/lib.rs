@@ -5,7 +5,8 @@ pub mod collide;
 pub mod audio;
 pub mod graphics;
 
-pub mod engine{}
+pub mod engine {}
+
 #[cfg(test)]
 mod tests {
     #[test]

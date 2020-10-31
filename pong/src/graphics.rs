@@ -1,24 +1,24 @@
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::WindowCanvas;
+use sdl2::ttf::Sdl2TtfContext;
 
 use engine::geometry::AsRect;
-use engine::graphics::{Sprite, Window, RenderedString};
+use engine::graphics::{RenderedString, Sprite, Window};
 
 use crate::logic::Logic;
-use sdl2::ttf::Sdl2TtfContext;
 
 pub const MID_LINE_N: u32 = 30;
 pub const MID_LINE_WIDTH: u32 = 5;
-pub const MID_LINE_RELATIVE_LENGTH : f32 = 0.6;
+pub const MID_LINE_RELATIVE_LENGTH: f32 = 0.6;
 
-pub const SCORE_POINT_SIZE : u16 = 48;
-pub const SCORE_POSITION_Y : i32 = 100;
-pub const LEFT_SCORE_POSITION_X : i32 = 150;
-pub const RIGHT_SCORE_POSITION_X : i32 = 450;
+pub const SCORE_POINT_SIZE: u16 = 48;
+pub const SCORE_POSITION_Y: i32 = 100;
+pub const LEFT_SCORE_POSITION_X: i32 = 150;
+pub const RIGHT_SCORE_POSITION_X: i32 = 450;
 
 
-pub const FONT_PATH : &str = "res/atari.ttf";
+pub const FONT_PATH: &str = "res/atari.ttf";
 
 /// Struct containing all basic dynamic elements required to draw the game.
 ///
@@ -31,7 +31,6 @@ pub struct Graphics {
 }
 
 impl Graphics {
-
     /// Init the dynamic elements required to draw the game
     pub fn new() -> Graphics {
         Graphics {
@@ -58,8 +57,7 @@ impl Graphics {
     /// Start by clearing the all board.
     /// Then, it draws the static element : the mid line for instance.
     /// Finally, it draws each dynamic element and show the canvas
-    pub fn draw(&self, window: &mut Window, ttf_context : &Sdl2TtfContext) {
-
+    pub fn draw(&self, window: &mut Window, ttf_context: &Sdl2TtfContext) {
         window.clear();
 
         self.draw_mid_line(window);
@@ -99,7 +97,6 @@ struct Score {
 }
 
 impl Score {
-
     /// Create an empty score
     pub fn new() -> Score {
         let left: u8 = 0;
@@ -121,17 +118,17 @@ impl Score {
         let left_str = RenderedString::new(
             &self.left.to_string(),
             LEFT_SCORE_POSITION_X,
-            SCORE_POSITION_Y,ttf_context,
+            SCORE_POSITION_Y, ttf_context,
             FONT_PATH,
-            SCORE_POINT_SIZE
+            SCORE_POINT_SIZE,
         );
 
         let right_str = RenderedString::new(
             &self.right.to_string(),
             RIGHT_SCORE_POSITION_X,
-            SCORE_POSITION_Y,ttf_context,
+            SCORE_POSITION_Y, ttf_context,
             FONT_PATH,
-            SCORE_POINT_SIZE
+            SCORE_POINT_SIZE,
         );
 
         left_str.draw(canvas);

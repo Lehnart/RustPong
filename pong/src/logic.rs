@@ -1,9 +1,11 @@
 //! All logic aspect of the pong game.
-use engine::geometry::{AsRect, Rect};
-use engine::physics::{Velocity, Solid, Position};
-use engine::random::{rand, flip};
-use crate::audio::Audio;
 use std::f32::consts::PI;
+
+use engine::geometry::{AsRect, Rect};
+use engine::physics::{Position, Solid, Velocity};
+use engine::random::{flip, rand};
+
+use crate::audio::Audio;
 
 pub const RACKET_HEIGHT: f32 = 0.10;
 pub const RACKET_WIDTH: f32 = 0.01;
@@ -13,8 +15,8 @@ const RACKET_SPEED: f32 = 0.75;
 pub const BALL_DIM: f32 = 0.01;
 pub const BALL_SPEED: f32 = 0.5;
 
-pub const BOUNCE_ANGLE_MIN : f32 = -35.;
-pub const BOUNCE_ANGLE_MAX : f32 = 35.;
+pub const BOUNCE_ANGLE_MIN: f32 = -35.;
+pub const BOUNCE_ANGLE_MAX: f32 = 35.;
 
 pub const SCORE_MAX: u8 = 15;
 
@@ -28,7 +30,6 @@ pub const SCORE_MAX: u8 = 15;
 /// [`max`]: Score::max
 ///
 pub struct Score {
-
     /// Left player score.
     left: u8,
 
@@ -36,17 +37,16 @@ pub struct Score {
     right: u8,
 
     /// Score to achieve to win the game.
-    max : u8,
+    max: u8,
 }
 
 impl Score {
-
     /// Create a new score, starting at 0 zero for each player.
     fn new() -> Score {
         Score {
             left: 0,
             right: 0,
-            max: SCORE_MAX
+            max: SCORE_MAX,
         }
     }
 
@@ -85,15 +85,14 @@ pub struct Racket {
 }
 
 impl Racket {
-
     /// Create a new racket.
     ///
     /// At creation the racket is not moving.
     /// It can't get out from the screen.
     fn new(x: f32, y: f32) -> Racket {
-        let pos = Position::new(x,y);
-        let vel = Velocity::new(0.,0.);
-        let limit = Rect::new(0.,0.,1.,1.);
+        let pos = Position::new(x, y);
+        let vel = Velocity::new(0., 0.);
+        let limit = Rect::new(0., 0., 1., 1.);
         Racket {
             solid: Solid::new(pos, vel, RACKET_WIDTH, RACKET_HEIGHT, limit)
         }
@@ -107,23 +106,23 @@ impl Racket {
     /// To make the racket start moving.
     pub fn accelerate(&mut self) {
         let pv = self.solid.vel.copy();
-        self.solid.vel.set_vy(pv.vy()+RACKET_SPEED);
+        self.solid.vel.set_vy(pv.vy() + RACKET_SPEED);
     }
 
     /// To make the racket stop moving.
     pub fn decelerate(&mut self) {
         let pv = self.solid.vel.copy();
-        self.solid.vel.set_vy(pv.vy()-RACKET_SPEED);
+        self.solid.vel.set_vy(pv.vy() - RACKET_SPEED);
     }
 
     /// Compute the bounce angle of the ball on the racket
-    pub fn get_bounce_angle(&self, x:f32, y:f32) -> f32 {
+    pub fn get_bounce_angle(&self, x: f32, y: f32) -> f32 {
         let rect = self.as_rect();
-        let rel_y = (y - rect.y0() - (RACKET_HEIGHT/2.)) / RACKET_HEIGHT*2.;
+        let rel_y = (y - rect.y0() - (RACKET_HEIGHT / 2.)) / RACKET_HEIGHT * 2.;
 
-        let mut angle = (rel_y*(BOUNCE_ANGLE_MAX - BOUNCE_ANGLE_MIN)).to_radians();
-        if x > 0.5{
-            angle = BOUNCE_ANGLE_MAX-angle + BOUNCE_ANGLE_MIN;
+        let mut angle = (rel_y * (BOUNCE_ANGLE_MAX - BOUNCE_ANGLE_MIN)).to_radians();
+        if x > 0.5 {
+            angle = BOUNCE_ANGLE_MAX - angle + BOUNCE_ANGLE_MIN;
             angle += PI;
         }
         angle
@@ -147,19 +146,17 @@ pub struct Ball {
 }
 
 impl Ball {
-
     /// Create a new ball with a random direction
     fn new(x: f32, y: f32) -> Ball {
-
-        let mut random_angle: i32 = rand(-35,35);
+        let mut random_angle: i32 = rand(-35, 35);
         if flip() {
             random_angle += 180;
         }
         let random_angle = random_angle as f32 * std::f32::consts::PI / 180.;
 
-        let pos = Position::new(x,y);
-        let vel = Velocity::new(random_angle.cos() * BALL_SPEED,random_angle.sin() * BALL_SPEED);
-        let limit = Rect::new(-0.1,0.,1.2,1.1);
+        let pos = Position::new(x, y);
+        let vel = Velocity::new(random_angle.cos() * BALL_SPEED, random_angle.sin() * BALL_SPEED);
+        let limit = Rect::new(-0.1, 0., 1.2, 1.1);
 
         Ball {
             solid: Solid::new(pos, vel, BALL_DIM, BALL_DIM, limit)
@@ -172,7 +169,7 @@ impl Ball {
     }
 
     /// Reflect ball from the wall.
-    pub fn reflect(&mut self, y0 : f32) {
+    pub fn reflect(&mut self, y0: f32) {
         self.solid.pos.set_y(y0);
 
         let vy = self.solid.vel.vy();
@@ -180,11 +177,11 @@ impl Ball {
     }
 
     /// Bounce at a given angle.
-    pub fn bounce(&mut self, angle : f32, x_shift : f32){
+    pub fn bounce(&mut self, angle: f32, x_shift: f32) {
 
         // Shift the ball outside the collision
         let x = self.solid.pos.x();
-        self.solid.pos.set_x( x+ x_shift);
+        self.solid.pos.set_x(x + x_shift);
 
         // Set the new speed
         let vx = self.solid.vel.mag() * angle.cos();
@@ -213,13 +210,12 @@ pub struct Logic<'a> {
     pub ball: Ball,
     pub score: Score,
 
-    audio : &'a Audio,
+    audio: &'a Audio,
 
     is_over: bool,
 }
 
 impl Logic<'_> {
-
     /// Create a new game logic with default values for game settings
     pub fn new(audio: &Audio) -> Logic {
         Logic {
@@ -229,7 +225,7 @@ impl Logic<'_> {
             score: Score::new(),
 
             audio,
-            is_over: false
+            is_over: false,
         }
     }
 
@@ -243,7 +239,7 @@ impl Logic<'_> {
 
     /// Check if the ball is out of board, meaning there is a goal.
     /// Add a point to the player who scores and thrown another ball
-    fn update_score(&mut self){
+    fn update_score(&mut self) {
         let ball_rect = self.ball.as_rect();
         let x = ball_rect.xc();
         if x < 0. || x > 1. {

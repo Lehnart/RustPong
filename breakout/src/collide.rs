@@ -1,10 +1,11 @@
-use crate::logic::{Logic, BOARD_LEFT_LIMIT_X, BOARD_RIGHT_LIMIT_X, BOARD_TOP_LIMIT_Y};
-use engine::geometry::{AsRect, Rect};
 use engine::collide::collide;
+use engine::geometry::{AsRect, Rect};
+
 use crate::audio::Audio;
+use crate::logic::{BOARD_LEFT_LIMIT_X, BOARD_RIGHT_LIMIT_X, BOARD_TOP_LIMIT_Y, Logic};
 
 /// Handle the collision between the racket and the ball. It produces a sound when there is a bounce.
-pub fn collide_ball_and_racket(logic: &mut Logic, audio : &Audio) {
+pub fn collide_ball_and_racket(logic: &mut Logic, audio: &Audio) {
     let ball = logic.ball.as_rect();
     let racket = logic.racket.as_rect();
 
@@ -22,7 +23,7 @@ pub fn collide_ball_and_racket(logic: &mut Logic, audio : &Audio) {
 }
 
 /// Handle the collision between the racket and the ball, producing a sound when it happens.
-pub fn collide_ball_and_wall(logic: &mut Logic, audio : &Audio) {
+pub fn collide_ball_and_wall(logic: &mut Logic, audio: &Audio) {
     let ball = logic.ball.as_rect();
     let left_wall = Rect::from_2_points(0., 0., BOARD_LEFT_LIMIT_X, 1.);
     match collide(&ball, &left_wall) {
@@ -53,33 +54,29 @@ pub fn collide_ball_and_wall(logic: &mut Logic, audio : &Audio) {
 }
 
 /// Handle the collision between the blocks and the ball, producing a sound when it happens.
-pub fn collide_ball_and_blocks(logic: &mut Logic, audio : &Audio) {
+pub fn collide_ball_and_blocks(logic: &mut Logic, audio: &Audio) {
     let ball = logic.ball.as_rect();
 
-    for block in &mut  logic.blocks.block_vec {
-
-        if block.is_destroyed() { continue }
+    for block in &mut logic.blocks.block_vec {
+        if block.is_destroyed() { continue; }
 
         let block_rec = block.as_rect();
         match collide(&ball, &block_rec) {
             Some(rect) => {
-                logic.score.add((block.get_value()+1) as u32);
+                logic.score.add((block.get_value() + 1) as u32);
                 block.destroy();
                 audio.play_block_bounce(block.get_value() as i32);
 
                 if rect.w() > rect.h() {
                     let mut y_shift = rect.h();
-                    if rect.yc() < block_rec.yc(){
-                        y_shift = - y_shift;
+                    if rect.yc() < block_rec.yc() {
+                        y_shift = -y_shift;
                     }
                     logic.ball.reflect_y(y_shift);
-
-                }
-
-               else {
+                } else {
                     let mut x_shift = rect.w();
-                    if rect.xc() < block_rec.xc(){
-                        x_shift = - x_shift;
+                    if rect.xc() < block_rec.xc() {
+                        x_shift = -x_shift;
                     }
                     logic.ball.reflect_x(x_shift);
                 }
@@ -87,5 +84,4 @@ pub fn collide_ball_and_blocks(logic: &mut Logic, audio : &Audio) {
             None => (),
         };
     }
-
 }

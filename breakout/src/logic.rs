@@ -1,35 +1,36 @@
-use engine::physics::{Solid, Position, Velocity};
-use engine::geometry::{Rect, AsRect};
+use engine::geometry::{AsRect, Rect};
+use engine::physics::{Position, Solid, Velocity};
 use engine::random::rand;
 
-pub const RACKET_WIDTH :f32 = 0.08;
-pub const RACKET_HEIGHT :f32 = 0.02;
-pub const RACKET_Y0 : f32 = 0.9;
-pub const RACKET_SPEED : f32 = 0.75;
+pub const RACKET_WIDTH: f32 = 0.08;
+pub const RACKET_HEIGHT: f32 = 0.02;
+pub const RACKET_Y0: f32 = 0.9;
+pub const RACKET_SPEED: f32 = 0.75;
 
-pub const BOARD_LEFT_LIMIT_X : f32 = 0.015;
-pub const BOARD_RIGHT_LIMIT_X : f32 = 0.985;
-pub const BOARD_TOP_LIMIT_Y : f32 = 0.015;
+pub const BOARD_LEFT_LIMIT_X: f32 = 0.015;
+pub const BOARD_RIGHT_LIMIT_X: f32 = 0.985;
+pub const BOARD_TOP_LIMIT_Y: f32 = 0.015;
 
-pub const BLOCK_WIDTH : f32 = 0.06;
-pub const BLOCK_HEIGHT : f32 = 0.015;
-pub const BLOCK_STEP_X : f32 = 0.01;
-pub const BLOCK_STEP_Y : f32 = 0.01;
-pub const BLOCK_ROW_N : u8 = 8;
-pub const BLOCK_COL_N : u8 = 14;
+pub const BLOCK_WIDTH: f32 = 0.06;
+pub const BLOCK_HEIGHT: f32 = 0.015;
+pub const BLOCK_STEP_X: f32 = 0.01;
+pub const BLOCK_STEP_Y: f32 = 0.01;
+pub const BLOCK_ROW_N: u8 = 8;
+pub const BLOCK_COL_N: u8 = 14;
 
-pub const BLOCKS_X0 : f32 = 0.015;
-pub const BLOCKS_Y0 : f32 = 0.2;
+pub const BLOCKS_X0: f32 = 0.015;
+pub const BLOCKS_Y0: f32 = 0.2;
 
-pub const BALL_X0 : f32 = 0.5;
-pub const BALL_Y0 : f32 = 0.5;
+pub const BALL_X0: f32 = 0.5;
+pub const BALL_Y0: f32 = 0.5;
 pub const BALL_SPEED: f32 = 0.5;
 pub const BALL_DIM: f32 = 0.01;
 
-pub const BOUNCE_ANGLE_MAX : f32 = 270.+60.;
-pub const BOUNCE_ANGLE_MIN : f32 = 270.-60.;
+pub const BOUNCE_ANGLE_MAX: f32 = 270. + 60.;
+pub const BOUNCE_ANGLE_MIN: f32 = 270. - 60.;
 
-pub const LIFE_STARTING_COUNT : u32 = 3;
+pub const LIFE_STARTING_COUNT: u32 = 3;
+
 /// The Racket represents the player.
 ///
 /// A racket is a rectangle that can be moved from left to right, trying to reach the ball
@@ -39,16 +40,15 @@ pub struct Racket {
 }
 
 impl Racket {
-
     /// Create a new racket in the center of the board.
     pub fn new() -> Racket {
-        let pos = Position::new(0.5-(RACKET_WIDTH/2.), RACKET_Y0);
-        let vel = Velocity::new(0.,0.);
+        let pos = Position::new(0.5 - (RACKET_WIDTH / 2.), RACKET_Y0);
+        let vel = Velocity::new(0., 0.);
         let w = RACKET_WIDTH;
         let h = RACKET_HEIGHT;
-        let limit = Rect::from_2_points(BOARD_LEFT_LIMIT_X,0.,BOARD_RIGHT_LIMIT_X,1.);
+        let limit = Rect::from_2_points(BOARD_LEFT_LIMIT_X, 0., BOARD_RIGHT_LIMIT_X, 1.);
 
-        let solid = Solid::new(pos,vel,w,h,limit);
+        let solid = Solid::new(pos, vel, w, h, limit);
 
         Racket {
             solid
@@ -58,13 +58,13 @@ impl Racket {
     /// To make the racket start moving.
     pub fn accelerate(&mut self) {
         let pv = self.solid.vel.copy();
-        self.solid.vel.set_vx(pv.vx()+RACKET_SPEED);
+        self.solid.vel.set_vx(pv.vx() + RACKET_SPEED);
     }
 
     /// To make the racket stop moving.
     pub fn decelerate(&mut self) {
         let pv = self.solid.vel.copy();
-        self.solid.vel.set_vx(pv.vx()-RACKET_SPEED);
+        self.solid.vel.set_vx(pv.vx() - RACKET_SPEED);
     }
 
     /// Racket update is just the solid physics updating.
@@ -73,10 +73,10 @@ impl Racket {
     }
 
     /// Compute the bounce angle of the ball on the racket
-    pub fn get_bounce_angle(&self, x:f32, _y:f32) -> f32 {
+    pub fn get_bounce_angle(&self, x: f32, _y: f32) -> f32 {
         let rect = self.as_rect();
         let rel_x = (x - rect.x0()) / RACKET_WIDTH;
-        let angle = ((rel_x*(BOUNCE_ANGLE_MAX - BOUNCE_ANGLE_MIN)) + BOUNCE_ANGLE_MIN).to_radians();
+        let angle = ((rel_x * (BOUNCE_ANGLE_MAX - BOUNCE_ANGLE_MIN)) + BOUNCE_ANGLE_MIN).to_radians();
         angle
     }
 }
@@ -92,25 +92,24 @@ impl AsRect for Racket {
 ///
 /// The block can be destroyed when collided by the ball.
 /// Each block has a value, which determines the score earned when it is destroyed.
-pub struct Block{
-    solid : Solid,
-    value : u8,
-    is_destroyed : bool
+pub struct Block {
+    solid: Solid,
+    value: u8,
+    is_destroyed: bool,
 }
 
-impl Block{
-
+impl Block {
     /// Create a new block add the given position with a given value.
-    pub fn new(x:f32,y:f32, value:u8)-> Block{
-        Block{
-            solid : Solid::fixed(x,y,BLOCK_WIDTH,BLOCK_HEIGHT),
+    pub fn new(x: f32, y: f32, value: u8) -> Block {
+        Block {
+            solid: Solid::fixed(x, y, BLOCK_WIDTH, BLOCK_HEIGHT),
             value,
-            is_destroyed : false
+            is_destroyed: false,
         }
     }
 
     pub fn get_value(&self) -> u8 { self.value }
-    pub fn destroy(&mut self){ self.is_destroyed = true}
+    pub fn destroy(&mut self) { self.is_destroyed = true }
     pub fn is_destroyed(&self) -> bool { self.is_destroyed }
 }
 
@@ -123,31 +122,30 @@ impl AsRect for Block {
 /// Represents all the blocks in one struct to handle drawing and collision more easily
 ///
 /// Blocks are represented as a vector of blocks
-pub struct Blocks{
+pub struct Blocks {
     pub block_vec: Vec<Block>
 }
 
-impl Blocks{
-
+impl Blocks {
     /// Create all the blocks of the game
-    pub fn new() -> Blocks{
+    pub fn new() -> Blocks {
         let mut blocks: Vec<Block> = Vec::new();
         for i in 0..BLOCK_ROW_N {
-            for j in 0..BLOCK_COL_N{
+            for j in 0..BLOCK_COL_N {
                 blocks.push(
                     Block::new(
-                        j as f32 *(BLOCK_WIDTH+BLOCK_STEP_X) + BLOCKS_X0,
-                        i as f32 *(BLOCK_HEIGHT+BLOCK_STEP_Y) + BLOCKS_Y0,
-                        (BLOCK_ROW_N-i-1)/2 as u8
+                        j as f32 * (BLOCK_WIDTH + BLOCK_STEP_X) + BLOCKS_X0,
+                        i as f32 * (BLOCK_HEIGHT + BLOCK_STEP_Y) + BLOCKS_Y0,
+                        (BLOCK_ROW_N - i - 1) / 2 as u8,
                     )
                 );
             }
         }
-        Blocks{ block_vec: blocks }
+        Blocks { block_vec: blocks }
     }
 
     /// Get a block at a given index.
-    pub fn get(&self, i:usize) -> &Block{
+    pub fn get(&self, i: usize) -> &Block {
         &self.block_vec[i]
     }
 }
@@ -162,13 +160,12 @@ pub struct Ball {
 }
 
 impl Ball {
-
     /// Create a new ball with a random direction
     fn new() -> Ball {
-        let random_angle= (rand(90-45,90+45) as f32).to_radians();
-        let pos = Position::new(BALL_X0,BALL_Y0);
-        let vel = Velocity::new(random_angle.cos() * BALL_SPEED,random_angle.sin() * BALL_SPEED);
-        let limit = Rect::from_2_points(0., 0.,1., 2.);
+        let random_angle = (rand(90 - 45, 90 + 45) as f32).to_radians();
+        let pos = Position::new(BALL_X0, BALL_Y0);
+        let vel = Velocity::new(random_angle.cos() * BALL_SPEED, random_angle.sin() * BALL_SPEED);
+        let limit = Rect::from_2_points(0., 0., 1., 2.);
 
         Ball {
             solid: Solid::new(pos, vel, BALL_DIM, BALL_DIM, limit)
@@ -181,27 +178,27 @@ impl Ball {
     }
 
     /// Reflect ball on x direction
-    pub fn reflect_x(&mut self, x_shift : f32) {
+    pub fn reflect_x(&mut self, x_shift: f32) {
         let x = self.solid.pos.x();
-        self.solid.pos.set_x(x+x_shift);
+        self.solid.pos.set_x(x + x_shift);
         let vx = self.solid.vel.vx();
         self.solid.vel.set_vx(-vx);
     }
 
     /// Reflect ball on y direction
-    pub fn reflect_y(&mut self, y_shift : f32) {
+    pub fn reflect_y(&mut self, y_shift: f32) {
         let y = self.solid.pos.y();
-        self.solid.pos.set_y(y+y_shift);
+        self.solid.pos.set_y(y + y_shift);
         let vy = self.solid.vel.vy();
         self.solid.vel.set_vy(-vy);
     }
 
     /// Bounce at a given angle.
-    pub fn bounce(&mut self, angle : f32, y_shift : f32){
+    pub fn bounce(&mut self, angle: f32, y_shift: f32) {
 
         // Shift the ball outside the collision
         let y = self.solid.pos.y();
-        self.solid.pos.set_y( y+ y_shift);
+        self.solid.pos.set_y(y + y_shift);
 
         // Set the new speed
         let vx = self.solid.vel.mag() * angle.cos();
@@ -211,10 +208,10 @@ impl Ball {
     }
 
     /// Reset ball position at the center of the board
-    pub fn reset(&mut self){
-        let random_angle= (rand(90-45,90+45) as f32).to_radians();
-        let pos = Position::new(BALL_X0,BALL_Y0);
-        let vel = Velocity::new(random_angle.cos() * BALL_SPEED,random_angle.sin() * BALL_SPEED);
+    pub fn reset(&mut self) {
+        let random_angle = (rand(90 - 45, 90 + 45) as f32).to_radians();
+        let pos = Position::new(BALL_X0, BALL_Y0);
+        let vel = Velocity::new(random_angle.cos() * BALL_SPEED, random_angle.sin() * BALL_SPEED);
         self.solid.vel = vel;
         self.solid.pos = pos;
     }
@@ -235,7 +232,6 @@ pub struct Score {
 }
 
 impl Score {
-
     /// Create a new score, starting at 0 zero.
     fn new() -> Score {
         Score {
@@ -249,10 +245,9 @@ impl Score {
     }
 
     /// Add points to the score.
-    pub fn add(&mut self, points : u32)  {
+    pub fn add(&mut self, points: u32) {
         self.current += points
     }
-
 }
 
 /// The current number of life.
@@ -263,7 +258,6 @@ pub struct Life {
 }
 
 impl Life {
-
     /// Creating the life counter
     fn new() -> Life {
         Life {
@@ -276,7 +270,7 @@ impl Life {
     }
 
     /// Remove one life from the current count
-    pub fn remove(&mut self)  {
+    pub fn remove(&mut self) {
         self.count -= 1;
     }
 }
@@ -287,8 +281,8 @@ pub struct Logic {
     pub racket: Racket,
     pub blocks: Blocks,
     pub ball: Ball,
-    pub score : Score,
-    pub life : Life,
+    pub score: Score,
+    pub life: Life,
     is_over: bool,
 }
 
@@ -299,9 +293,9 @@ impl Logic {
             racket: Racket::new(),
             blocks: Blocks::new(),
             ball: Ball::new(),
-            score : Score::new(),
-            life : Life::new(),
-            is_over: false
+            score: Score::new(),
+            life: Life::new(),
+            is_over: false,
         }
     }
 

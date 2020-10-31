@@ -1,4 +1,4 @@
-use sdl2::mixer::{Chunk};
+use sdl2::mixer::Chunk;
 
 /// Structure containing all the sounds that will be played during the game.
 pub struct Audio {
@@ -22,8 +22,7 @@ impl Audio {
     pub fn play_racket_bounce(&self) {
         sdl2::mixer::Channel::all().play(&self.racket_bounce, 0).unwrap();
     }
-    pub fn play_block_bounce(&self, loops : i32 ) {
-
+    pub fn play_block_bounce(&self, loops: i32) {
         sdl2::mixer::Channel::all().play(&self.block_bounce, loops).unwrap();
     }
 }

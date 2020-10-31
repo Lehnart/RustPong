@@ -1,4 +1,4 @@
-use sdl2::mixer::{Chunk};
+use sdl2::mixer::Chunk;
 
 pub struct Audio {
     wall_bounce: Chunk,

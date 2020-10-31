@@ -43,8 +43,8 @@ impl Velocity {
     }
     pub fn default() -> Velocity {
         Velocity {
-            vx:0.,
-            vy:0.,
+            vx: 0.,
+            vy: 0.,
         }
     }
     pub fn copy(&self) -> Velocity {
@@ -91,9 +91,9 @@ impl Solid {
         }
     }
 
-    pub fn fixed(x : f32, y: f32, w: f32, h: f32) -> Solid
+    pub fn fixed(x: f32, y: f32, w: f32, h: f32) -> Solid
     {
-        let pos = Position::new(x,y);
+        let pos = Position::new(x, y);
         let vel = Velocity::default();
 
         Solid {
@@ -101,7 +101,7 @@ impl Solid {
             vel,
             w,
             h,
-            limit : Rect::default(),
+            limit: Rect::default(),
         }
     }
 
@@ -120,7 +120,6 @@ impl Solid {
         } else if self.pos.x() + self.w > self.limit.x1() {
             self.pos.set_x(self.limit.x1() - self.w);
         }
-
     }
 }
 
