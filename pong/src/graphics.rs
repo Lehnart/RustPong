@@ -1,44 +1,39 @@
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::WindowCanvas;
-use sdl2::surface::Surface;
 
 use engine::geometry::AsRect;
-use engine::graphics::{Sprite, Window};
+use engine::graphics::{Sprite, Window, RenderedString};
 
 use crate::logic::Logic;
-
-pub const SCORE_SPRITE_PATHS: [&str; 10] = [
-    "res/0.bmp",
-    "res/1.bmp",
-    "res/2.bmp",
-    "res/3.bmp",
-    "res/4.bmp",
-    "res/5.bmp",
-    "res/6.bmp",
-    "res/7.bmp",
-    "res/8.bmp",
-    "res/9.bmp"
-];
+use sdl2::ttf::Sdl2TtfContext;
 
 pub const MID_LINE_N: u32 = 30;
 pub const MID_LINE_WIDTH: u32 = 5;
 pub const MID_LINE_RELATIVE_LENGTH : f32 = 0.6;
 
+pub const SCORE_POINT_SIZE : u16 = 48;
+pub const SCORE_POSITION_Y : i32 = 100;
+pub const LEFT_SCORE_POSITION_X : i32 = 150;
+pub const RIGHT_SCORE_POSITION_X : i32 = 450;
+
+
+pub const FONT_PATH : &str = "res/atari.ttf";
+
 /// Struct containing all basic dynamic elements required to draw the game.
 ///
 /// The graphics part contains the 2 rackets, the ball, and the score.
-pub struct Graphics<'a> {
+pub struct Graphics {
     left_racket: Sprite,
     right_racket: Sprite,
     ball: Sprite,
-    score: Score<'a>,
+    score: Score,
 }
 
-impl Graphics<'_> {
+impl Graphics {
 
     /// Init the dynamic elements required to draw the game
-    pub fn new<'a>() -> Graphics<'a> {
+    pub fn new() -> Graphics {
         Graphics {
             left_racket: Sprite::default(Color::WHITE),
             right_racket: Sprite::default(Color::WHITE),
@@ -63,7 +58,7 @@ impl Graphics<'_> {
     /// Start by clearing the all board.
     /// Then, it draws the static element : the mid line for instance.
     /// Finally, it draws each dynamic element and show the canvas
-    pub fn draw(&self, window: &mut Window) {
+    pub fn draw(&self, window: &mut Window, ttf_context : &Sdl2TtfContext) {
 
         window.clear();
 
@@ -74,7 +69,7 @@ impl Graphics<'_> {
         canvas.fill_rect(self.right_racket.rect).unwrap();
         canvas.fill_rect(self.ball.rect).unwrap();
 
-        self.score.draw(canvas);
+        self.score.draw(canvas, ttf_context);
 
         canvas.present();
     }
@@ -98,27 +93,20 @@ impl Graphics<'_> {
 }
 
 /// Used to draw the current score, using digit sprites.
-struct Score<'a> {
+struct Score {
     left: u8,
     right: u8,
-    digits: Vec<Surface<'a>>,
 }
 
-impl Score<'_> {
+impl Score {
 
     /// Create an empty score
-    pub fn new<'a>() -> Score<'a> {
-        let mut digits: Vec<Surface> = Vec::new();
-        for path in SCORE_SPRITE_PATHS.iter() {
-            let surface = Surface::load_bmp(path).unwrap();
-            digits.push(surface);
-        }
+    pub fn new() -> Score {
         let left: u8 = 0;
         let right: u8 = 0;
         Score {
             left,
             right,
-            digits,
         }
     }
 
@@ -129,30 +117,24 @@ impl Score<'_> {
     }
 
     /// Draw the score on the scree, first selecting the right sprites from the digit, then showing it.
-    pub fn draw(&self, canvas: &mut WindowCanvas) {
-        let left_digit = &self.digits[(self.left % 10) as usize];
-        let right_digit = &self.digits[(self.right % 10) as usize];
+    pub fn draw(&self, canvas: &mut WindowCanvas, ttf_context: &Sdl2TtfContext) {
+        let left_str = RenderedString::new(
+            &self.left.to_string(),
+            LEFT_SCORE_POSITION_X,
+            SCORE_POSITION_Y,ttf_context,
+            FONT_PATH,
+            SCORE_POINT_SIZE
+        );
 
-        let texture_creator = canvas.texture_creator();
-        let left_texture = &texture_creator.create_texture_from_surface(left_digit).unwrap();
-        let right_texture = &texture_creator.create_texture_from_surface(right_digit).unwrap();
+        let right_str = RenderedString::new(
+            &self.right.to_string(),
+            RIGHT_SCORE_POSITION_X,
+            SCORE_POSITION_Y,ttf_context,
+            FONT_PATH,
+            SCORE_POINT_SIZE
+        );
 
-        let w = left_digit.width();
-        let h = left_digit.height();
-
-        let c_dim = canvas.output_size().unwrap();
-        let cw = c_dim.0;
-
-        canvas.copy(
-            left_texture,
-            Rect::new(0, 0, w, h),
-            Rect::new(((cw / 4) - (w / 2)) as i32, 50, w, h),
-        ).unwrap();
-
-        canvas.copy(
-            right_texture,
-            Rect::new(0, 0, w, h),
-            Rect::new(((3 * cw / 4) - (w / 2)) as i32, 50, w, h),
-        ).unwrap();
+        left_str.draw(canvas);
+        right_str.draw(canvas);
     }
 }

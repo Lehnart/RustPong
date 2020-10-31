@@ -16,7 +16,7 @@ pub const BALL_SPEED: f32 = 0.5;
 pub const BOUNCE_ANGLE_MIN : f32 = -35.;
 pub const BOUNCE_ANGLE_MAX : f32 = 35.;
 
-pub const SCORE_MAX: u8 = 10;
+pub const SCORE_MAX: u8 = 15;
 
 /// Score of both players.
 ///

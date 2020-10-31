@@ -210,6 +210,53 @@ impl AsRect for Ball {
     }
 }
 
+
+pub struct Score {
+    current: u32,
+}
+
+impl Score {
+
+    /// Create a new score, starting at 0 zero.
+    fn new() -> Score {
+        Score {
+            current: 0,
+        }
+    }
+
+    /// Get player score.
+    pub fn get(&self) -> u32 {
+        self.current
+    }
+
+    pub fn add(&mut self, points : u32)  {
+        self.current += points
+    }
+
+}
+
+pub struct Life {
+    count: u32,
+}
+
+impl Life {
+
+    fn new() -> Life {
+        Life {
+            count: 3,
+        }
+    }
+
+    pub fn get(&self) -> u32 {
+        self.count
+    }
+
+    pub fn remove(&mut self)  {
+        self.count -= 1;
+    }
+
+}
+
 /// Logic is a structure that contains all entities from the game.
 ///
 ///
@@ -217,6 +264,8 @@ pub struct Logic {
     pub racket: Racket,
     pub blocks: Blocks,
     pub ball: Ball,
+    pub score : Score,
+    pub life : Life,
     is_over: bool,
 }
 
@@ -227,6 +276,8 @@ impl Logic {
             racket: Racket::new(),
             blocks: Blocks::new(),
             ball: Ball::new(),
+            score : Score::new(),
+            life : Life::new(),
             is_over: false
         }
     }
@@ -235,6 +286,15 @@ impl Logic {
     pub fn update(&mut self, dt: f32) {
         self.racket.update(dt);
         self.ball.update(dt);
+
+        if self.ball.solid.pos.y() > 1. {
+            self.life.remove();
+            self.ball.reset();
+        }
+
+        if self.life.count <= 0 {
+            self.over();
+        }
     }
 
     /// Set the game over

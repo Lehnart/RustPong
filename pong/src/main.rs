@@ -23,6 +23,8 @@ fn main() {
     let mut collide = Collide::new(&audio);
 
     let mut window = Window::new(600, 600);
+    let ttf_context = sdl2::ttf::init().unwrap();
+
     let mut graphics = Graphics::new();
 
 
@@ -47,7 +49,7 @@ fn main() {
         collide.collide_ball_and_racket(&mut logic);
 
         graphics.update(&logic,&window);
-        graphics.draw(&mut window);
+        graphics.draw(&mut window, &ttf_context);
     }
 }
 

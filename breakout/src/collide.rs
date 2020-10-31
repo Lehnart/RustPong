@@ -60,6 +60,7 @@ pub fn collide_ball_and_blocks(logic: &mut Logic, audio : &Audio) {
         let block_rec = block.as_rect();
         match collide(&ball, &block_rec) {
             Some(rect) => {
+                logic.score.add((block.get_value()+1) as u32);
                 block.destroy();
                 audio.play_block_bounce(block.get_value() as i32);
 

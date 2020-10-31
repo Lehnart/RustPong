@@ -12,4 +12,4 @@ engine = { path = "../engine" }
 [dependencies.sdl2]
 version = "0.34.3"
 default-features = false
-features = ["mixer"]
+features = ["mixer","ttf"]

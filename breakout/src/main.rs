@@ -20,6 +20,7 @@ fn main() {
     let audio = Audio::new();
     let mut logic = Logic::new();
 
+    let ttf_context = sdl2::ttf::init().unwrap();
     let mut window = Window::new(600, 600);
     let mut graphics = Graphics::new();
 
@@ -45,6 +46,6 @@ fn main() {
         collide_ball_and_blocks(&mut logic, &audio);
 
         graphics.update(&logic,&window);
-        graphics.draw(&mut window);
+        graphics.draw(&mut window, &ttf_context);
     }
 }
