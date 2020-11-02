@@ -18,7 +18,7 @@ impl Window {
 
         let video_subsystem = sdl_context.video().unwrap();
         let window = video_subsystem
-            .window("Pong in Rust", width, height)
+            .window("rust-games", width, height)
             .position_centered()
             .build()
             .unwrap();
@@ -49,6 +49,8 @@ impl Window {
 
 
 pub struct Sprite<'a> {
+    x_shift : i32,
+    y_shift : i32,
     pub surface : Surface<'a>,
     pub dest_rect: Rect,
     pub angle: f64,
@@ -56,10 +58,12 @@ pub struct Sprite<'a> {
 }
 
 impl Sprite<'_>{
-    pub fn new( surf_path : &str, dest_rect : Rect, color: Color) -> Sprite {
+    pub fn new(x_shift: i32, y_shift: i32, surf_path : &str, dest_rect : Rect, color: Color) -> Sprite {
         let mut surface = Surface::load_bmp(surf_path).unwrap();
         surface.set_color_mod(color);
         Sprite {
+            x_shift,
+            y_shift,
             surface,
             dest_rect,
             angle : 0.,
@@ -67,9 +71,14 @@ impl Sprite<'_>{
         }
     }
 
-    pub fn update(&mut self, logic_rect: geometry::Rect, angle: f64, canvas_width: u32, canvas_height: u32) {
-        self.dest_rect.y = (logic_rect.y0()*(canvas_height as f32)) as i32;
-        self.dest_rect.x = (logic_rect.x0()*(canvas_width as f32)) as i32;
+    pub fn update(&mut self, logic_rect: geometry::Rect, angle: f64, scale_x: u32, scale_y: u32) {
+        self.dest_rect.y = (logic_rect.y0()*(scale_y as f32)) as i32;
+        self.dest_rect.x = (logic_rect.x0()*(scale_x as f32)) as i32;
+
+        self.dest_rect.x += self.x_shift;
+        self.dest_rect.y += self.y_shift;
+
+
         self.angle = angle;
     }
 
@@ -101,29 +110,37 @@ impl Sprite<'_>{
 }
 
 pub struct RectSprite {
+    pub x_shift : i32,
+    pub y_shift : i32,
     pub rect: Rect,
     pub color: Color,
     is_visible: bool,
 }
 
 impl RectSprite {
-    pub fn new(x: i32, y: i32, w: u32, h: u32, color: Color) -> RectSprite {
+    pub fn new(x_shift: i32, y_shift: i32, color: Color) -> RectSprite {
         RectSprite {
-            rect: Rect::new(x, y, w, h),
+            x_shift,
+            y_shift,
+            rect: Rect::new(0, 0, 1, 1),
             color,
             is_visible: true,
         }
     }
 
     pub fn default(color: Color) -> RectSprite {
-        RectSprite::new(0, 0, 1, 1, color)
+        RectSprite::new(0, 0, color)
     }
 
-    pub fn update(&mut self, logic_rect: geometry::Rect, canvas_width: u32, canvas_height: u32) {
-        self.rect.y = (logic_rect.y0() * canvas_height as f32) as i32;
-        self.rect.x = (logic_rect.x0() * canvas_width as f32) as i32;
-        self.rect.set_width((logic_rect.w() * canvas_width as f32) as u32);
-        self.rect.set_height((logic_rect.h() * canvas_height as f32) as u32);
+    pub fn update(&mut self, logic_rect: geometry::Rect, x_scale: u32, y_scale: u32) {
+        self.rect.x = (logic_rect.x0() * x_scale as f32) as i32;
+        self.rect.y = (logic_rect.y0() * y_scale as f32) as i32;
+
+        self.rect.x += self.x_shift;
+        self.rect.y += self.y_shift;
+
+        self.rect.set_width((logic_rect.w() * x_scale as f32) as u32);
+        self.rect.set_height((logic_rect.h() * y_scale as f32) as u32);
     }
 
     pub fn draw(&self, canvas: &mut WindowCanvas) {

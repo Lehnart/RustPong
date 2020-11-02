@@ -3,19 +3,19 @@ use engine::physics::{Position, Solid, Velocity};
 
 pub const BOARD_LEFT_LIMIT: f32 = 0.02;
 pub const BOARD_RIGHT_LIMIT: f32 = 0.98;
-pub const BOARD_TOP_LIMIT: f32 = 0.10;
+pub const BOARD_TOP_LIMIT: f32 = 0.02;
+pub const BOARD_TOP_LIMIT_HEIGHT: f32 = 0.02;
 pub const BOARD_BOTTOM_LIMIT: f32 = 0.98;
 
-pub const TANK_WIDTH: f32 = 0.05;
-pub const TANK_HEIGHT: f32 = 0.05;
+pub const TANK_WIDTH: f32 = 0.04;
+pub const TANK_HEIGHT: f32 = 0.04;
 pub const TANK_VELOCITY: f32 = 0.10;
 pub const TANK_ROTATION_ANGLE: f32 = std::f32::consts::PI / 8.;
 pub const TANK_ROTATION_DELAY: f32 = 0.25;
 
-
-pub const LEFT_TANK_X0: f32 = 0.20;
+pub const LEFT_TANK_X0: f32 = 0.06;
 pub const LEFT_TANK_Y0: f32 = 0.50;
-pub const RIGHT_TANK_X0: f32 = 0.80;
+pub const RIGHT_TANK_X0: f32 = 0.90;
 pub const RIGHT_TANK_Y0: f32 = 0.50;
 
 pub struct Tank {

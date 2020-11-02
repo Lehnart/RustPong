@@ -10,11 +10,14 @@ mod graphics;
 mod event;
 mod input;
 
+pub const WINDOW_WIDTH : u32 = 600;
+pub const WINDOW_HEIGHT : u32 = 700;
+
 fn main() {
     let mut logic = Logic::new();
 
-    let mut window = Window::new(600, 600);
-    let mut graphics = Graphics::new();
+    let mut window = Window::new(WINDOW_WIDTH, WINDOW_HEIGHT);
+    let mut graphics = Graphics::new(WINDOW_WIDTH,WINDOW_HEIGHT);
 
     let mut previous = SystemTime::now();
     'game_loop: loop {
