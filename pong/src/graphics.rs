@@ -4,7 +4,7 @@ use sdl2::render::WindowCanvas;
 use sdl2::ttf::Sdl2TtfContext;
 
 use engine::geometry::AsRect;
-use engine::graphics::{RenderedString, Sprite, Window};
+use engine::graphics::{RenderedString, RectSprite, Window};
 
 use crate::logic::Logic;
 
@@ -24,9 +24,9 @@ pub const FONT_PATH: &str = "res/atari.ttf";
 ///
 /// The graphics part contains the 2 rackets, the ball, and the score.
 pub struct Graphics {
-    left_racket: Sprite,
-    right_racket: Sprite,
-    ball: Sprite,
+    left_racket: RectSprite,
+    right_racket: RectSprite,
+    ball: RectSprite,
     score: Score,
 }
 
@@ -34,9 +34,9 @@ impl Graphics {
     /// Init the dynamic elements required to draw the game
     pub fn new() -> Graphics {
         Graphics {
-            left_racket: Sprite::default(Color::WHITE),
-            right_racket: Sprite::default(Color::WHITE),
-            ball: Sprite::default(Color::WHITE),
+            left_racket: RectSprite::default(Color::WHITE),
+            right_racket: RectSprite::default(Color::WHITE),
+            ball: RectSprite::default(Color::WHITE),
             score: Score::new(),
         }
     }

@@ -1,6 +1,6 @@
 use sdl2::EventPump;
 use sdl2::pixels::Color;
-use sdl2::rect::Rect;
+use sdl2::rect::{Rect, Point};
 use sdl2::render::WindowCanvas;
 use sdl2::surface::Surface;
 use sdl2::ttf::Sdl2TtfContext;
@@ -47,23 +47,76 @@ impl Window {
     }
 }
 
-pub struct Sprite {
+
+pub struct Sprite<'a> {
+    pub surface : Surface<'a>,
+    pub dest_rect: Rect,
+    pub angle: f64,
+    is_visible: bool,
+}
+
+impl Sprite<'_>{
+    pub fn new( surf_path : &str, dest_rect : Rect, color: Color) -> Sprite {
+        let mut surface = Surface::load_bmp(surf_path).unwrap();
+        surface.set_color_mod(color);
+        Sprite {
+            surface,
+            dest_rect,
+            angle : 0.,
+            is_visible: true,
+        }
+    }
+
+    pub fn update(&mut self, logic_rect: geometry::Rect, angle: f64, canvas_width: u32, canvas_height: u32) {
+        self.dest_rect.y = (logic_rect.y0()*(canvas_height as f32)) as i32;
+        self.dest_rect.x = (logic_rect.x0()*(canvas_width as f32)) as i32;
+        self.angle = angle;
+    }
+
+    pub fn draw(&self, canvas: &mut WindowCanvas) {
+        if self.is_visible {
+
+            let texture_creator = canvas.texture_creator();
+            let texture = &texture_creator.create_texture_from_surface(&self.surface).unwrap();
+
+            canvas.copy_ex(
+                texture,
+                Rect::new(0,0,self.surface.width(),self.surface.height()),
+                self.dest_rect,
+                self.angle,
+                Point::new((self.dest_rect.width()/2) as i32,(self.dest_rect.height()/2) as i32),
+                false,
+                false
+            ).unwrap();
+        }
+    }
+
+    pub fn hide(&mut self) {
+        self.is_visible = false;
+    }
+
+    pub fn show(&mut self) {
+        self.is_visible = true;
+    }
+}
+
+pub struct RectSprite {
     pub rect: Rect,
     pub color: Color,
     is_visible: bool,
 }
 
-impl Sprite {
-    pub fn new(x: i32, y: i32, w: u32, h: u32, color: Color) -> Sprite {
-        Sprite {
+impl RectSprite {
+    pub fn new(x: i32, y: i32, w: u32, h: u32, color: Color) -> RectSprite {
+        RectSprite {
             rect: Rect::new(x, y, w, h),
             color,
             is_visible: true,
         }
     }
 
-    pub fn default(color: Color) -> Sprite {
-        Sprite::new(0, 0, 1, 1, color)
+    pub fn default(color: Color) -> RectSprite {
+        RectSprite::new(0, 0, 1, 1, color)
     }
 
     pub fn update(&mut self, logic_rect: geometry::Rect, canvas_width: u32, canvas_height: u32) {

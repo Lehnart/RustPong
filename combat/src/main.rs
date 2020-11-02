@@ -3,10 +3,12 @@ use engine::graphics::Window;
 use crate::graphics::Graphics;
 use std::time::SystemTime;
 use crate::event::handle_event;
+use crate::input::handle_input;
 
 mod logic;
 mod graphics;
 mod event;
+mod input;
 
 fn main() {
     let mut logic = Logic::new();
@@ -24,6 +26,8 @@ fn main() {
         for event in event_pump.poll_iter() {
             handle_event(event, &mut logic);
         }
+        handle_input(event_pump, &mut logic);
+
 
         logic.update(dt);
         if logic.is_over() {

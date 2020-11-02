@@ -2,7 +2,7 @@ use sdl2::pixels::Color;
 use sdl2::ttf::Sdl2TtfContext;
 
 use engine::geometry::{AsRect, Rect};
-use engine::graphics::{RenderedString, Sprite, Window};
+use engine::graphics::{RenderedString, RectSprite, Window};
 
 use crate::logic::{BLOCK_COL_N, BLOCK_ROW_N, BOARD_LEFT_LIMIT_X, BOARD_RIGHT_LIMIT_X, BOARD_TOP_LIMIT_Y, Logic};
 
@@ -22,12 +22,12 @@ pub const LIFE_POSITION_Y: i32 = 70;
 /// Struct containing all basic dynamic elements required to draw the game.
 ///
 pub struct Graphics {
-    racket: Sprite,
-    left_limit: Sprite,
-    right_limit: Sprite,
-    top_limit: Sprite,
-    blocks: Vec<Sprite>,
-    ball: Sprite,
+    racket: RectSprite,
+    left_limit: RectSprite,
+    right_limit: RectSprite,
+    top_limit: RectSprite,
+    blocks: Vec<RectSprite>,
+    ball: RectSprite,
     score: String,
     life: String,
 }
@@ -35,20 +35,20 @@ pub struct Graphics {
 impl Graphics {
     /// Init the dynamic elements required to draw the game
     pub fn new() -> Graphics {
-        let mut blocks: Vec<Sprite> = Vec::new();
+        let mut blocks: Vec<RectSprite> = Vec::new();
         for _i in 0..BLOCK_ROW_N {
             for _j in 0..BLOCK_COL_N {
-                blocks.push(Sprite::default(Color::WHITE));
+                blocks.push(RectSprite::default(Color::WHITE));
             }
         }
 
         Graphics {
-            racket: Sprite::default(RACKET_COLOR),
-            left_limit: Sprite::default(LIMIT_COLOR),
-            right_limit: Sprite::default(LIMIT_COLOR),
-            top_limit: Sprite::default(LIMIT_COLOR),
+            racket: RectSprite::default(RACKET_COLOR),
+            left_limit: RectSprite::default(LIMIT_COLOR),
+            right_limit: RectSprite::default(LIMIT_COLOR),
+            top_limit: RectSprite::default(LIMIT_COLOR),
             blocks,
-            ball: Sprite::default(BALL_COLOR),
+            ball: RectSprite::default(BALL_COLOR),
             score: "0".parse().unwrap(),
             life: "0".parse().unwrap(),
         }
