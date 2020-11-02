@@ -25,7 +25,7 @@ pub struct Tank {
 }
 
 impl Tank {
-    pub fn new(x0: f32, y0: f32) -> Tank {
+    pub fn new(x0: f32, y0: f32, orientation: f32) -> Tank {
         let pos = Position::new(x0, y0);
         let vel = Velocity::new(0., 0.);
         let w = TANK_WIDTH;
@@ -36,7 +36,7 @@ impl Tank {
 
         Tank {
             solid,
-            orientation: 0.,
+            orientation,
             rotation_delay: 0.,
         }
     }
@@ -96,6 +96,7 @@ impl AsRect for Tank {
 ///
 pub struct Logic {
     pub left_tank: Tank,
+    pub right_tank: Tank,
     is_over: bool,
 }
 
@@ -103,7 +104,8 @@ impl Logic {
     /// Create a new game logic with default values for game settings
     pub fn new() -> Logic {
         Logic {
-            left_tank: Tank::new(LEFT_TANK_X0, LEFT_TANK_Y0),
+            left_tank: Tank::new(LEFT_TANK_X0, LEFT_TANK_Y0,0.),
+            right_tank: Tank::new(RIGHT_TANK_X0, RIGHT_TANK_Y0,std::f32::consts::PI ),
             is_over: false,
         }
     }
@@ -111,6 +113,7 @@ impl Logic {
     /// Update each entity of a delta of time and check if the game is over.
     pub fn update(&mut self, dt: f32) {
         self.left_tank.update(dt);
+        self.right_tank.update(dt);
     }
 
     /// Set the game over

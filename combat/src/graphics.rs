@@ -9,8 +9,11 @@ pub const TANK_SPRITE_WIDTH : u32 = 25;
 pub const TANK_SPRITE_HEIGHT : u32 = 25;
 pub const LEFT_TANK_COLOR : Color = Color::RGB(255,0,0);
 pub const RIGHT_TANK_COLOR : Color = Color::RGB(0,0,255);
+
+
 pub struct Graphics<'a> {
     left_tank: Sprite<'a>,
+    right_tank: Sprite<'a>,
 }
 
 impl Graphics<'_> {
@@ -21,6 +24,10 @@ impl Graphics<'_> {
                 TANK_SPRITE_PATH,
                 Rect::new(0,0,TANK_SPRITE_WIDTH,TANK_SPRITE_HEIGHT),
                 LEFT_TANK_COLOR),
+            right_tank: Sprite::new(
+                TANK_SPRITE_PATH,
+                Rect::new(0,0,TANK_SPRITE_WIDTH,TANK_SPRITE_HEIGHT),
+                RIGHT_TANK_COLOR),
         }
     }
 
@@ -30,6 +37,7 @@ impl Graphics<'_> {
         let h = window.height();
 
         self.left_tank.update(logic.left_tank.as_rect(), logic.left_tank.get_orientation().to_degrees() as f64, w, h);
+        self.right_tank.update(logic.right_tank.as_rect(), logic.right_tank.get_orientation().to_degrees() as f64, w, h);
     }
 
     /// Draw the game.
@@ -41,6 +49,7 @@ impl Graphics<'_> {
 
         let canvas = &mut window.canvas;
         self.left_tank.draw(canvas);
+        self.right_tank.draw(canvas);
         canvas.present();
 
 

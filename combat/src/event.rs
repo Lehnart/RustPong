@@ -16,7 +16,12 @@ pub fn handle_event(event: Event, logic: &mut Logic) {
         Event::KeyUp { keycode: Some(Keycode::Up), repeat: false, .. } => {
             logic.left_tank.decelerate();
         }
-
+        Event::KeyDown { keycode: Some(Keycode::Z), repeat: false, .. } => {
+            logic.right_tank.accelerate();
+        }
+        Event::KeyUp { keycode: Some(Keycode::Z), repeat: false, .. } => {
+            logic.right_tank.decelerate();
+        }
         _ => {}
     }
 }
