@@ -13,7 +13,9 @@ pub const LIMIT_COLOR: Color = Color::WHITE;
 
 pub struct Graphics<'a> {
     left_tank: Sprite<'a>,
+    left_shell : RectSprite,
     right_tank: Sprite<'a>,
+    right_shell : RectSprite,
     left_limit: RectSprite,
     right_limit: RectSprite,
     top_limit: RectSprite,
@@ -31,12 +33,22 @@ impl Graphics<'_> {
                 TANK_SPRITE_PATH,
                 Rect::new(0,0,(TANK_WIDTH*canvas_width as f32) as u32,(TANK_HEIGHT*canvas_width as f32) as u32),
                 LEFT_TANK_COLOR),
+            left_shell: RectSprite::new(
+                0,
+                y_shift,
+                LEFT_TANK_COLOR
+            ),
             right_tank: Sprite::new(
                 0,
                 y_shift,
                 TANK_SPRITE_PATH,
                 Rect::new(0,0,(TANK_WIDTH*canvas_width as f32) as u32,(TANK_HEIGHT*canvas_width as f32) as u32),
                 RIGHT_TANK_COLOR),
+            right_shell: RectSprite::new(
+                0,
+                y_shift,
+                RIGHT_TANK_COLOR
+            ),
             left_limit: RectSprite::new(
                 0,
                 y_shift,
@@ -66,6 +78,22 @@ impl Graphics<'_> {
 
         self.left_tank.update(logic.left_tank.as_rect(), logic.left_tank.get_orientation().to_degrees() as f64, w, w);
         self.right_tank.update(logic.right_tank.as_rect(), logic.right_tank.get_orientation().to_degrees() as f64, w, w);
+        let left_shell = logic.left_tank.get_shell();
+        let right_shell = logic.right_tank.get_shell();
+
+
+        if left_shell.is_destroyed() {
+            self.left_shell.hide();
+        } else {
+            self.left_shell.show();
+            self.left_shell.update(left_shell.as_rect(), w, w);
+        }
+        if right_shell.is_destroyed() {
+            self.right_shell.hide();
+        } else {
+            self.right_shell.show();
+            self.right_shell.update(right_shell.as_rect(), w, w);
+        }
 
         self.left_limit.update(geometry::Rect::from_2_points(0.,BOARD_TOP_LIMIT-BOARD_TOP_LIMIT_HEIGHT,BOARD_LEFT_LIMIT,1.01),w,w);
         self.top_limit.update(geometry::Rect::from_2_points(0.,BOARD_TOP_LIMIT-BOARD_TOP_LIMIT_HEIGHT,1.01,BOARD_TOP_LIMIT),w,w);
@@ -83,7 +111,8 @@ impl Graphics<'_> {
         let canvas = &mut window.canvas;
         self.left_tank.draw(canvas);
         self.right_tank.draw(canvas);
-
+        self.left_shell.draw(canvas);
+        self.right_shell.draw(canvas);
         self.left_limit.draw(canvas);
         self.top_limit.draw(canvas);
         self.right_limit.draw(canvas);

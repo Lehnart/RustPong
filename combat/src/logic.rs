@@ -13,13 +13,66 @@ pub const TANK_VELOCITY: f32 = 0.10;
 pub const TANK_ROTATION_ANGLE: f32 = std::f32::consts::PI / 8.;
 pub const TANK_ROTATION_DELAY: f32 = 0.25;
 
+pub const SHELL_WIDTH: f32 = 0.005;
+pub const SHELL_HEIGHT: f32 = 0.005;
+pub const SHELL_VELOCITY: f32 = 0.30;
+
 pub const LEFT_TANK_X0: f32 = 0.06;
 pub const LEFT_TANK_Y0: f32 = 0.50;
 pub const RIGHT_TANK_X0: f32 = 0.90;
 pub const RIGHT_TANK_Y0: f32 = 0.50;
 
+pub struct Shell {
+    solid: Solid,
+    is_destroyed: bool,
+}
+
+impl Shell {
+    pub fn new() -> Shell {
+        let pos = Position::new(0., 0.);
+        let vel = Velocity::new(0., 0.);
+        let w = SHELL_WIDTH;
+        let h = SHELL_HEIGHT;
+        let limit = Rect::from_2_points(-1., -1.0, 2.0, 2.0);
+
+        let solid = Solid::new(pos, vel, w, h, limit);
+        Shell {
+            solid,
+            is_destroyed: true,
+        }
+    }
+
+    pub fn is_destroyed(&self) -> bool {
+        self.is_destroyed
+    }
+
+    pub fn destroy(&mut self) {
+        self.is_destroyed = true;
+    }
+
+    fn launch(&mut self, x0: f32, y0: f32, angle: f32) {
+        self.is_destroyed = false;
+        let pos = Position::new(x0, y0);
+        let vel = Velocity::new(SHELL_VELOCITY * angle.cos(), SHELL_VELOCITY * angle.sin());
+        self.solid.pos = pos;
+        self.solid.vel = vel;
+    }
+
+    fn update(&mut self, dt: f32) {
+        self.solid.update(dt);
+    }
+}
+
+impl AsRect for Shell {
+    fn as_rect(&self) -> Rect {
+        self.solid.as_rect()
+    }
+}
+
+
 pub struct Tank {
     solid: Solid,
+    shell: Shell,
     orientation: f32,
     rotation_delay: f32,
 }
@@ -36,9 +89,18 @@ impl Tank {
 
         Tank {
             solid,
+            shell: Shell::new(),
             orientation,
             rotation_delay: 0.,
         }
+    }
+
+    pub fn get_shell(&self) -> &Shell {
+        &self.shell
+    }
+
+    pub fn get_orientation(&self) -> f32 {
+        self.orientation
     }
 
     pub fn accelerate(&mut self) {
@@ -75,13 +137,27 @@ impl Tank {
         self.solid.vel.set_vy(v * self.orientation.sin());
     }
 
+    pub fn fire(&mut self) {
+        if self.shell.is_destroyed {
+            let rect = self.solid.as_rect();
+            self.shell.launch(rect.xc(), rect.yc(), self.orientation);
+        }
+    }
+
     fn update(&mut self, dt: f32) {
         self.rotation_delay += dt;
         self.solid.update(dt);
-    }
 
-    pub fn get_orientation(&self) -> f32 {
-        self.orientation
+        self.shell.update(dt);
+
+        // TODO : a déplacer dans la gestion des collisions
+        let shell_rect = self.shell.as_rect();
+        if shell_rect.xc() > BOARD_RIGHT_LIMIT || shell_rect.xc() < BOARD_LEFT_LIMIT {
+            self.shell.destroy();
+        }
+        if shell_rect.yc() > BOARD_BOTTOM_LIMIT || shell_rect.yc() < BOARD_TOP_LIMIT {
+            self.shell.destroy();
+        }
     }
 }
 
@@ -104,8 +180,8 @@ impl Logic {
     /// Create a new game logic with default values for game settings
     pub fn new() -> Logic {
         Logic {
-            left_tank: Tank::new(LEFT_TANK_X0, LEFT_TANK_Y0,0.),
-            right_tank: Tank::new(RIGHT_TANK_X0, RIGHT_TANK_Y0,std::f32::consts::PI ),
+            left_tank: Tank::new(LEFT_TANK_X0, LEFT_TANK_Y0, 0.),
+            right_tank: Tank::new(RIGHT_TANK_X0, RIGHT_TANK_Y0, std::f32::consts::PI),
             is_over: false,
         }
     }
