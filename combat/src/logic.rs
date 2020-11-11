@@ -1,11 +1,13 @@
+use sdl2::surface::Surface;
+
 use engine::geometry::{AsRect, Rect};
 use engine::physics::{Position, Solid, Velocity};
 
-pub const BOARD_LEFT_LIMIT: f32 = 0.02;
-pub const BOARD_RIGHT_LIMIT: f32 = 0.98;
-pub const BOARD_TOP_LIMIT: f32 = 0.02;
-pub const BOARD_TOP_LIMIT_HEIGHT: f32 = 0.02;
-pub const BOARD_BOTTOM_LIMIT: f32 = 0.98;
+pub const BOARD_LEFT_LIMIT: f32 = 0.05;
+pub const BOARD_RIGHT_LIMIT: f32 = 0.95;
+pub const BOARD_TOP_LIMIT: f32 = 0.05;
+pub const BOARD_TOP_LIMIT_HEIGHT: f32 = 0.05;
+pub const BOARD_BOTTOM_LIMIT: f32 = 0.95;
 
 pub const TANK_WIDTH: f32 = 0.04;
 pub const TANK_HEIGHT: f32 = 0.04;
@@ -21,6 +23,61 @@ pub const LEFT_TANK_X0: f32 = 0.06;
 pub const LEFT_TANK_Y0: f32 = 0.50;
 pub const RIGHT_TANK_X0: f32 = 0.90;
 pub const RIGHT_TANK_Y0: f32 = 0.50;
+
+pub const BLOCK_ROW_COUNT: usize = 30;
+pub const BLOCK_COL_COUNT: usize = 30;
+pub const LEVELS: [&str; 1] = ["res/level_1.bmp"];
+
+
+pub struct Map {
+    blocks: [[bool; BLOCK_COL_COUNT]; BLOCK_ROW_COUNT]
+}
+
+impl Map {
+
+    pub fn load(map_index: u32) -> Map {
+        let mut blocks = [[false; BLOCK_COL_COUNT]; BLOCK_ROW_COUNT];
+        let surface = Surface::load_bmp(LEVELS[map_index as usize]).unwrap();
+        let pixels = surface.without_lock().unwrap();
+        for j in 0..surface.height() {
+            for i in 0..surface.width() {
+                let index = j * surface.pitch() + i;
+                let pixel = pixels[index as usize];
+                let mut block: bool = false;
+                if pixel == 0 {
+                    block = true;
+                }
+                blocks[j as usize][i as usize] = block;
+            }
+        }
+        Map { blocks }
+    }
+
+    fn width() -> f32 {
+        (BOARD_RIGHT_LIMIT - BOARD_LEFT_LIMIT) as f32 / BLOCK_COL_COUNT as f32
+    }
+    fn height() -> f32 {
+        (BOARD_BOTTOM_LIMIT - BOARD_TOP_LIMIT) as f32 / BLOCK_ROW_COUNT as f32
+    }
+
+    pub fn get_block(&self, i: u32, j: u32) -> Option<Rect> {
+        let block = self.blocks[j as usize][i as usize];
+        let w = Map::width();
+        let h = Map::height();
+
+        match block {
+            false => None,
+            true => Some(
+                Rect::new(
+                    BOARD_LEFT_LIMIT + (i as f32 * w),
+                    BOARD_TOP_LIMIT + (j as f32 * h),
+                    w,
+                    h,
+                )
+            )
+        }
+    }
+}
 
 pub struct Shell {
     solid: Solid,
@@ -60,6 +117,7 @@ impl Shell {
 
     fn update(&mut self, dt: f32) {
         self.solid.update(dt);
+        Map::load(0);
     }
 }
 
@@ -72,7 +130,7 @@ impl AsRect for Shell {
 
 pub struct Tank {
     solid: Solid,
-    shell: Shell,
+    pub shell: Shell,
     orientation: f32,
     rotation_delay: f32,
 }
@@ -159,6 +217,10 @@ impl Tank {
             self.shell.destroy();
         }
     }
+
+    pub fn move_back(&mut self, dt: f32){
+        self.solid.update(-dt);
+    }
 }
 
 impl AsRect for Tank {
@@ -173,6 +235,7 @@ impl AsRect for Tank {
 pub struct Logic {
     pub left_tank: Tank,
     pub right_tank: Tank,
+    pub map: Map,
     is_over: bool,
 }
 
@@ -182,6 +245,7 @@ impl Logic {
         Logic {
             left_tank: Tank::new(LEFT_TANK_X0, LEFT_TANK_Y0, 0.),
             right_tank: Tank::new(RIGHT_TANK_X0, RIGHT_TANK_Y0, std::f32::consts::PI),
+            map: Map::load(0),
             is_over: false,
         }
     }

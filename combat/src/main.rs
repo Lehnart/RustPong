@@ -4,11 +4,13 @@ use crate::graphics::Graphics;
 use std::time::SystemTime;
 use crate::event::handle_event;
 use crate::input::handle_input;
+use crate::collide::{collide_shell_and_map, collide_tank_and_map, collide_tanks};
 
 mod logic;
 mod graphics;
 mod event;
 mod input;
+mod collide;
 
 pub const WINDOW_WIDTH : u32 = 600;
 pub const WINDOW_HEIGHT : u32 = 700;
@@ -36,6 +38,12 @@ fn main() {
         if logic.is_over() {
             break 'game_loop;
         }
+
+        collide_shell_and_map(&mut logic.left_tank.shell, &logic.map);
+        collide_shell_and_map(&mut logic.right_tank.shell, &logic.map);
+        collide_tank_and_map(&mut logic.left_tank, &logic.map, dt);
+        collide_tank_and_map(&mut logic.right_tank, &logic.map, dt);
+        collide_tanks(&mut logic.left_tank, &mut logic.right_tank, dt);
 
         graphics.update(&logic, &window);
         graphics.draw(&mut window);

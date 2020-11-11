@@ -78,7 +78,6 @@ impl Sprite<'_>{
         self.dest_rect.x += self.x_shift;
         self.dest_rect.y += self.y_shift;
 
-
         self.angle = angle;
     }
 
@@ -156,6 +155,19 @@ impl RectSprite {
 
     pub fn show(&mut self) {
         self.is_visible = true;
+    }
+}
+
+impl Copy for RectSprite { }
+impl Clone for RectSprite {
+    fn clone(&self) -> RectSprite {
+        RectSprite {
+            x_shift : self.x_shift,
+            y_shift : self.y_shift,
+            rect: self.rect,
+            color : self.color,
+            is_visible : self.is_visible,
+        }
     }
 }
 
