@@ -4,7 +4,7 @@ use crate::graphics::Graphics;
 use std::time::SystemTime;
 use crate::event::handle_event;
 use crate::input::handle_input;
-use crate::collide::{collide_shell_and_map, collide_tank_and_map, collide_tanks};
+use crate::collide::{collide_shell_and_map, collide_tank_and_map, collide_tanks, collide_shell_and_tank};
 
 mod logic;
 mod graphics;
@@ -44,6 +44,8 @@ fn main() {
         collide_tank_and_map(&mut logic.left_tank, &logic.map, dt);
         collide_tank_and_map(&mut logic.right_tank, &logic.map, dt);
         collide_tanks(&mut logic.left_tank, &mut logic.right_tank, dt);
+        collide_shell_and_tank(&mut logic.left_tank.shell, &mut logic.right_tank );
+        collide_shell_and_tank(&mut logic.right_tank.shell, &mut logic.left_tank );
 
         graphics.update(&logic, &window);
         graphics.draw(&mut window);

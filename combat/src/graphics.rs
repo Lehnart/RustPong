@@ -132,8 +132,17 @@ impl Graphics<'_> {
     pub fn update(&mut self, logic: &Logic, window: &Window) {
         let w = window.width();
 
-        self.left_tank.update(logic.left_tank.as_rect(), logic.left_tank.get_orientation().to_degrees() as f64, w, w);
-        self.right_tank.update(logic.right_tank.as_rect(), logic.right_tank.get_orientation().to_degrees() as f64, w, w);
+        let mut left_tank_angle = logic.left_tank.get_orientation().to_degrees() as f64;
+        if logic.left_tank.is_impacted() {
+            left_tank_angle = self.left_tank.angle + 45.;
+        }
+        self.left_tank.update(logic.left_tank.as_rect(), left_tank_angle, w, w);
+
+        let mut right_tank_angle = logic.right_tank.get_orientation().to_degrees() as f64;
+        if logic.right_tank.is_impacted() {
+            right_tank_angle = self.right_tank.angle + 45.;
+        }
+        self.right_tank.update(logic.right_tank.as_rect(), right_tank_angle, w, w);
         let left_shell = logic.left_tank.get_shell();
         let right_shell = logic.right_tank.get_shell();
 

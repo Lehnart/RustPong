@@ -78,6 +78,7 @@ impl Sprite<'_>{
         self.dest_rect.x += self.x_shift;
         self.dest_rect.y += self.y_shift;
 
+
         self.angle = angle;
     }
 

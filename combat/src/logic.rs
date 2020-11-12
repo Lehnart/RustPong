@@ -14,6 +14,7 @@ pub const TANK_HEIGHT: f32 = 0.04;
 pub const TANK_VELOCITY: f32 = 0.10;
 pub const TANK_ROTATION_ANGLE: f32 = std::f32::consts::PI / 8.;
 pub const TANK_ROTATION_DELAY: f32 = 0.25;
+pub const TANK_IMPACT_DELAY: f32 = 0.5;
 
 pub const SHELL_WIDTH: f32 = 0.005;
 pub const SHELL_HEIGHT: f32 = 0.005;
@@ -34,7 +35,6 @@ pub struct Map {
 }
 
 impl Map {
-
     pub fn load(map_index: u32) -> Map {
         let mut blocks = [[false; BLOCK_COL_COUNT]; BLOCK_ROW_COUNT];
         let surface = Surface::load_bmp(LEVELS[map_index as usize]).unwrap();
@@ -119,6 +119,10 @@ impl Shell {
         self.solid.update(dt);
         Map::load(0);
     }
+
+    pub fn get_orientation(&self) -> f32 {
+        self.solid.vel.angle()
+    }
 }
 
 impl AsRect for Shell {
@@ -133,6 +137,8 @@ pub struct Tank {
     pub shell: Shell,
     orientation: f32,
     rotation_delay: f32,
+    is_impacted: bool,
+    impact_delay: f32,
 }
 
 impl Tank {
@@ -150,6 +156,8 @@ impl Tank {
             shell: Shell::new(),
             orientation,
             rotation_delay: 0.,
+            is_impacted: false,
+            impact_delay: 0.,
         }
     }
 
@@ -161,41 +169,61 @@ impl Tank {
         self.orientation
     }
 
+    pub fn is_impacted(&self) -> bool { self.is_impacted }
+
+    pub fn impact(&mut self, angle: f32) {
+        if self.is_impacted { () }
+
+        self.is_impacted = true;
+        self.orientation = angle;
+        self.accelerate();
+    }
+
     pub fn accelerate(&mut self) {
+        if self.is_impacted { () }
+
         self.solid.vel.set_vx(TANK_VELOCITY * self.orientation.cos());
         self.solid.vel.set_vy(TANK_VELOCITY * self.orientation.sin());
     }
 
     pub fn decelerate(&mut self) {
+        if self.is_impacted { () }
+
         self.solid.vel.set_vx(0.);
         self.solid.vel.set_vy(0.);
     }
 
+    fn turn(&mut self, dir: bool) {
+        if dir { self.orientation += TANK_ROTATION_ANGLE; } else { self.orientation -= TANK_ROTATION_ANGLE; }
+        let v = self.solid.vel.mag();
+        self.solid.vel.set_vx(v * self.orientation.cos());
+        self.solid.vel.set_vy(v * self.orientation.sin());
+    }
+
     pub fn turn_left(&mut self) {
+        if self.is_impacted { () }
+
         if self.rotation_delay < TANK_ROTATION_DELAY {
             return;
         }
         self.rotation_delay = 0.;
-
-        self.orientation -= TANK_ROTATION_ANGLE;
-        let v = self.solid.vel.mag();
-        self.solid.vel.set_vx(v * self.orientation.cos());
-        self.solid.vel.set_vy(v * self.orientation.sin());
+        self.turn(false)
     }
 
     pub fn turn_right(&mut self) {
+        if self.is_impacted { () }
+
         if self.rotation_delay < TANK_ROTATION_DELAY {
             return;
         }
         self.rotation_delay = 0.;
 
-        self.orientation += TANK_ROTATION_ANGLE;
-        let v = self.solid.vel.mag();
-        self.solid.vel.set_vx(v * self.orientation.cos());
-        self.solid.vel.set_vy(v * self.orientation.sin());
+        self.turn(true)
     }
 
     pub fn fire(&mut self) {
+        if self.is_impacted { () }
+
         if self.shell.is_destroyed {
             let rect = self.solid.as_rect();
             self.shell.launch(rect.xc(), rect.yc(), self.orientation);
@@ -204,8 +232,19 @@ impl Tank {
 
     fn update(&mut self, dt: f32) {
         self.rotation_delay += dt;
-        self.solid.update(dt);
 
+        if self.is_impacted {
+            self.impact_delay += dt;
+
+            if self.impact_delay > TANK_IMPACT_DELAY {
+                self.impact_delay = 0.;
+                self.is_impacted = false;
+                self.solid.vel.set_vx(0.);
+                self.solid.vel.set_vy(0.);
+            }
+        }
+
+        self.solid.update(dt);
         self.shell.update(dt);
 
         // TODO : a déplacer dans la gestion des collisions
@@ -218,7 +257,7 @@ impl Tank {
         }
     }
 
-    pub fn move_back(&mut self, dt: f32){
+    pub fn move_back(&mut self, dt: f32) {
         self.solid.update(-dt);
     }
 }

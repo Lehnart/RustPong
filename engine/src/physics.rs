@@ -64,6 +64,7 @@ impl Velocity {
     pub fn mag(&self) -> f32 {
         ((self.vx * self.vx) + (self.vy * self.vy)).sqrt()
     }
+    pub fn angle(&self) -> f32 {self.vy.atan2(self.vx)}
 
     pub fn set_vx(&mut self, vx: f32) { self.vx = vx; }
     pub fn set_vy(&mut self, vy: f32) {
