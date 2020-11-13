@@ -1,12 +1,16 @@
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
+use sdl2::render::WindowCanvas;
 
 use engine::geometry;
 use engine::geometry::AsRect;
-use engine::graphics::{RectSprite, Sprite, Window};
+use engine::graphics::{RectSprite, RenderedString, Sprite, Window};
 
 use crate::logic::{BLOCK_COL_COUNT, BLOCK_ROW_COUNT, BOARD_BOTTOM_LIMIT, BOARD_LEFT_LIMIT, BOARD_RIGHT_LIMIT, BOARD_TOP_LIMIT, BOARD_TOP_LIMIT_HEIGHT, Logic, Map, TANK_HEIGHT, TANK_WIDTH};
-use sdl2::render::WindowCanvas;
+use sdl2::ttf::Sdl2TtfContext;
+
+pub const FONT_PATH: &str = "res/atari.ttf";
+pub const FONT_SIZE: u16 = 96;
 
 pub const TANK_SPRITE_PATH: &str = "res/tank.bmp";
 pub const LEFT_TANK_COLOR: Color = Color::RGB(255, 0, 0);
@@ -15,24 +19,32 @@ pub const RIGHT_TANK_COLOR: Color = Color::RGB(0, 0, 255);
 pub const LIMIT_COLOR: Color = Color::WHITE;
 pub const DECOR_COLOR: Color = Color::WHITE;
 
-pub const BLOCK_SIZE : i32 = 18;
+pub const BLOCK_SIZE: i32 = 18;
+
+pub const LEFT_SCORE_POSITION_X: i32 = 100;
+pub const LEFT_SCORE_POSITION_Y: i32 = 50;
+pub const LEFT_SCORE_COLOR: Color = LEFT_TANK_COLOR;
+
+pub const RIGHT_SCORE_POSITION_X: i32 = 500;
+pub const RIGHT_SCORE_POSITION_Y: i32 = 50;
+pub const RIGHT_SCORE_COLOR: Color = RIGHT_TANK_COLOR;
 
 pub struct Decor {
     blocks: [[RectSprite; BLOCK_COL_COUNT]; BLOCK_ROW_COUNT],
-    x_shift : i32,
-    y_shift : i32,
+    x_shift: i32,
+    y_shift: i32,
 }
 
 impl Decor {
-    pub fn new(x_shift: i32, y_shift: i32, canvas_width:u32) -> Decor {
+    pub fn new(x_shift: i32, y_shift: i32, canvas_width: u32) -> Decor {
         let ys = y_shift as f32 + (canvas_width as f32 * BOARD_TOP_LIMIT);
         let xs = x_shift as f32 + (canvas_width as f32 * BOARD_LEFT_LIMIT);
 
         let blocks = [[RectSprite::new(0, 0, DECOR_COLOR); BLOCK_COL_COUNT]; BLOCK_ROW_COUNT];
         Decor {
             blocks,
-            x_shift : xs as i32,
-            y_shift : ys as i32
+            x_shift: xs as i32,
+            y_shift: ys as i32,
         }
     }
 
@@ -47,15 +59,15 @@ impl Decor {
                         block.show();
                         block.rect.set_width(BLOCK_SIZE as u32);
                         block.rect.set_height(BLOCK_SIZE as u32);
-                        block.rect.set_x(self.x_shift + (BLOCK_SIZE*i as i32));
-                        block.rect.set_y(self.y_shift + (BLOCK_SIZE*j as i32));
+                        block.rect.set_x(self.x_shift + (BLOCK_SIZE * i as i32));
+                        block.rect.set_y(self.y_shift + (BLOCK_SIZE * j as i32));
                     }
                 }
             }
         }
     }
 
-    fn draw(&self, canvas : &mut WindowCanvas){
+    fn draw(&self, canvas: &mut WindowCanvas) {
         for j in 0..BLOCK_ROW_COUNT {
             for i in 0..BLOCK_COL_COUNT {
                 let block = &self.blocks[j][i];
@@ -75,56 +87,80 @@ pub struct Graphics<'a> {
     top_limit: RectSprite,
     bottom_limit: RectSprite,
     decor: Decor,
+    left_score: String,
+    right_score: String,
 }
 
 impl Graphics<'_> {
     /// Init the dynamic elements required to draw the game
     pub fn new<'a>(canvas_width: u32, canvas_height: u32) -> Graphics<'a> {
         let y_shift = (canvas_height - canvas_width) as i32;
+
+        let left_tank = Sprite::new(
+            0,
+            y_shift,
+            TANK_SPRITE_PATH,
+            Rect::new(0, 0, (TANK_WIDTH * canvas_width as f32) as u32, (TANK_HEIGHT * canvas_width as f32) as u32),
+            LEFT_TANK_COLOR);
+
+        let left_shell = RectSprite::new(
+            0,
+            y_shift,
+            LEFT_TANK_COLOR,
+        );
+
+        let right_tank = Sprite::new(
+            0,
+            y_shift,
+            TANK_SPRITE_PATH,
+            Rect::new(0, 0, (TANK_WIDTH * canvas_width as f32) as u32, (TANK_HEIGHT * canvas_width as f32) as u32),
+            RIGHT_TANK_COLOR);
+
+        let right_shell = RectSprite::new(
+            0,
+            y_shift,
+            RIGHT_TANK_COLOR,
+        );
+
+        let left_limit = RectSprite::new(
+            0,
+            y_shift,
+            LIMIT_COLOR);
+
+        let right_limit = RectSprite::new(
+            0,
+            y_shift,
+            LIMIT_COLOR,
+        );
+
+        let top_limit = RectSprite::new(
+            0,
+            y_shift,
+            LIMIT_COLOR,
+        );
+
+        let bottom_limit = RectSprite::new(
+            0,
+            y_shift,
+            LIMIT_COLOR,
+        );
+
+        let decor = Decor::new(0, y_shift, canvas_width);
+
+        let left_score = "0".parse().unwrap();
+        let right_score = "0".parse().unwrap();
         Graphics {
-            left_tank: Sprite::new(
-                0,
-                y_shift,
-                TANK_SPRITE_PATH,
-                Rect::new(0, 0, (TANK_WIDTH * canvas_width as f32) as u32, (TANK_HEIGHT * canvas_width as f32) as u32),
-                LEFT_TANK_COLOR),
-            left_shell: RectSprite::new(
-                0,
-                y_shift,
-                LEFT_TANK_COLOR,
-            ),
-            right_tank: Sprite::new(
-                0,
-                y_shift,
-                TANK_SPRITE_PATH,
-                Rect::new(0, 0, (TANK_WIDTH * canvas_width as f32) as u32, (TANK_HEIGHT * canvas_width as f32) as u32),
-                RIGHT_TANK_COLOR),
-            right_shell: RectSprite::new(
-                0,
-                y_shift,
-                RIGHT_TANK_COLOR,
-            ),
-            left_limit: RectSprite::new(
-                0,
-                y_shift,
-                LIMIT_COLOR,
-            ),
-            right_limit: RectSprite::new(
-                0,
-                y_shift,
-                LIMIT_COLOR,
-            ),
-            top_limit: RectSprite::new(
-                0,
-                y_shift,
-                LIMIT_COLOR,
-            ),
-            bottom_limit: RectSprite::new(
-                0,
-                y_shift,
-                LIMIT_COLOR,
-            ),
-            decor: Decor::new(0,y_shift,canvas_width),
+            left_tank,
+            left_shell,
+            right_tank,
+            right_shell,
+            left_limit,
+            right_limit,
+            top_limit,
+            bottom_limit,
+            decor,
+            left_score,
+            right_score,
         }
     }
 
@@ -167,13 +203,16 @@ impl Graphics<'_> {
         self.bottom_limit.update(geometry::Rect::from_2_points(0., BOARD_BOTTOM_LIMIT, 1.01, 1.01), w, w);
 
         self.decor.update(&logic.map);
+
+        self.left_score = logic.score.get_left_score().to_string();
+        self.right_score = logic.score.get_right_score().to_string();
     }
 
     /// Draw the game.
     ///
     /// Start by clearing the all board.
     /// It draws each dynamic element and show the canvas
-    pub fn draw(&self, window: &mut Window) {
+    pub fn draw(&self, window: &mut Window, ttf_context: &Sdl2TtfContext) {
         window.clear();
 
         let canvas = &mut window.canvas;
@@ -186,6 +225,30 @@ impl Graphics<'_> {
         self.right_limit.draw(canvas);
         self.bottom_limit.draw(canvas);
         self.decor.draw(canvas);
+
+        let rendered_left_score = RenderedString::new_colored
+            (
+                &self.left_score,
+                LEFT_SCORE_POSITION_X,
+                LEFT_SCORE_POSITION_Y,
+                ttf_context,
+                FONT_PATH,
+                FONT_SIZE,
+            LEFT_SCORE_COLOR
+            );
+        rendered_left_score.draw(canvas);
+
+        let rendered_right_score = RenderedString::new_colored
+            (
+                &self.right_score,
+                RIGHT_SCORE_POSITION_X,
+                RIGHT_SCORE_POSITION_Y,
+                ttf_context,
+                FONT_PATH,
+                FONT_SIZE,
+                RIGHT_SCORE_COLOR
+            );
+        rendered_right_score.draw(canvas);
 
         canvas.present();
     }

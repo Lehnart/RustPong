@@ -57,17 +57,19 @@ pub fn collide_tanks(tank1: &mut Tank,tank2: &mut Tank, dt:f32){
 }
 
 
-pub fn collide_shell_and_tank(shell: &mut Shell, tank: &mut Tank){
+pub fn collide_shell_and_tank(shell: &mut Shell, tank: &mut Tank) -> bool{
     let tank_rect = tank.as_rect();
     let shell_rect = shell.as_rect();
     match collide(&tank_rect, &shell_rect){
-        None => (),
+        None => false,
         Some(_) => {
             if !tank.is_impacted() {
                 let angle = shell.get_orientation();
                 tank.impact(angle);
                 shell.destroy();
+                return true;
             }
+            return false;
         }
     }
 }

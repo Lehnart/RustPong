@@ -20,6 +20,7 @@ fn main() {
 
     let mut window = Window::new(WINDOW_WIDTH, WINDOW_HEIGHT);
     let mut graphics = Graphics::new(WINDOW_WIDTH,WINDOW_HEIGHT);
+    let ttf_context = sdl2::ttf::init().unwrap();
 
     let mut previous = SystemTime::now();
     'game_loop: loop {
@@ -44,10 +45,15 @@ fn main() {
         collide_tank_and_map(&mut logic.left_tank, &logic.map, dt);
         collide_tank_and_map(&mut logic.right_tank, &logic.map, dt);
         collide_tanks(&mut logic.left_tank, &mut logic.right_tank, dt);
-        collide_shell_and_tank(&mut logic.left_tank.shell, &mut logic.right_tank );
-        collide_shell_and_tank(&mut logic.right_tank.shell, &mut logic.left_tank );
+        if collide_shell_and_tank(&mut logic.left_tank.shell, &mut logic.right_tank )
+        {
+            logic.score.point_left();
+        }
+        if collide_shell_and_tank(&mut logic.right_tank.shell, &mut logic.left_tank ){
+            logic.score.point_right();
+        }
 
         graphics.update(&logic, &window);
-        graphics.draw(&mut window);
+        graphics.draw(&mut window, &ttf_context);
     }
 }

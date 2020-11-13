@@ -185,6 +185,12 @@ impl RenderedString<'_> {
         RenderedString { surface, xc, yc }
     }
 
+    pub fn new_colored<'a>(str: &String, xc: i32, yc: i32, ttf_context: &Sdl2TtfContext, font_path: &str, font_size: u16, color : Color) -> RenderedString<'a> {
+        let font = ttf_context.load_font(font_path, font_size).unwrap();
+        let surface = font.render(&*str).solid(color).unwrap();
+        RenderedString { surface, xc, yc }
+    }
+
     pub fn draw(&self, canvas: &mut WindowCanvas) {
         let texture_creator = canvas.texture_creator();
         let texture = &texture_creator.create_texture_from_surface(&self.surface).unwrap();

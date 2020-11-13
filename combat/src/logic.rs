@@ -29,6 +29,36 @@ pub const BLOCK_ROW_COUNT: usize = 30;
 pub const BLOCK_COL_COUNT: usize = 30;
 pub const LEVELS: [&str; 1] = ["res/level_1.bmp"];
 
+pub struct Score{
+    left_score : u32,
+    right_score : u32,
+}
+
+impl Score{
+
+    pub fn new()-> Score{
+        Score{
+            left_score:0,
+            right_score:0
+        }
+    }
+
+    pub fn point_left(&mut self){
+        self.left_score +=1;
+    }
+
+    pub fn point_right(&mut self){
+        self.right_score +=1;
+    }
+
+    pub fn get_left_score(&self) -> u32{
+        return self.left_score;
+    }
+    pub fn get_right_score(&self)-> u32{
+        return self.right_score;
+    }
+
+}
 
 pub struct Map {
     blocks: [[bool; BLOCK_COL_COUNT]; BLOCK_ROW_COUNT]
@@ -109,7 +139,7 @@ impl Shell {
 
     fn launch(&mut self, x0: f32, y0: f32, angle: f32) {
         self.is_destroyed = false;
-        let pos = Position::new(x0, y0);
+        let pos = Position::new(x0 - (SHELL_WIDTH as f32 / 2.), y0 - (SHELL_HEIGHT as f32 / 2.));
         let vel = Velocity::new(SHELL_VELOCITY * angle.cos(), SHELL_VELOCITY * angle.sin());
         self.solid.pos = pos;
         self.solid.vel = vel;
@@ -272,6 +302,7 @@ impl AsRect for Tank {
 /// Logic is a structure that contains all entities from the game.
 ///
 pub struct Logic {
+    pub score : Score,
     pub left_tank: Tank,
     pub right_tank: Tank,
     pub map: Map,
@@ -282,6 +313,7 @@ impl Logic {
     /// Create a new game logic with default values for game settings
     pub fn new() -> Logic {
         Logic {
+            score : Score::new(),
             left_tank: Tank::new(LEFT_TANK_X0, LEFT_TANK_Y0, 0.),
             right_tank: Tank::new(RIGHT_TANK_X0, RIGHT_TANK_Y0, std::f32::consts::PI),
             map: Map::load(0),
