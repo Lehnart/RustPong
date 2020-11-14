@@ -28,7 +28,9 @@ pub fn handle_event(event: Event, logic: &mut Logic) {
         Event::KeyUp { keycode: Some(Keycode::Z), repeat: false, .. } => {
             logic.right_tank.decelerate();
         }
-
+        Event::KeyDown { keycode: Some(Keycode::R), repeat: false, .. } => {
+            logic.change_map();
+        }
         _ => {}
     }
 }

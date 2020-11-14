@@ -9,8 +9,8 @@ pub const BOARD_TOP_LIMIT: f32 = 0.05;
 pub const BOARD_TOP_LIMIT_HEIGHT: f32 = 0.05;
 pub const BOARD_BOTTOM_LIMIT: f32 = 0.95;
 
-pub const TANK_WIDTH: f32 = 0.04;
-pub const TANK_HEIGHT: f32 = 0.04;
+pub const TANK_WIDTH: f32 = 0.05;
+pub const TANK_HEIGHT: f32 = 0.05;
 pub const TANK_VELOCITY: f32 = 0.10;
 pub const TANK_ROTATION_ANGLE: f32 = std::f32::consts::PI / 8.;
 pub const TANK_ROTATION_DELAY: f32 = 0.25;
@@ -22,12 +22,12 @@ pub const SHELL_VELOCITY: f32 = 0.30;
 
 pub const LEFT_TANK_X0: f32 = 0.06;
 pub const LEFT_TANK_Y0: f32 = 0.50;
-pub const RIGHT_TANK_X0: f32 = 0.90;
+pub const RIGHT_TANK_X0: f32 = 0.89;
 pub const RIGHT_TANK_Y0: f32 = 0.50;
 
 pub const BLOCK_ROW_COUNT: usize = 30;
 pub const BLOCK_COL_COUNT: usize = 30;
-pub const LEVELS: [&str; 1] = ["res/level_1.bmp"];
+pub const LEVELS: [&str; 3] = ["res/level_1.bmp","res/level_2.bmp","res/level_3.bmp"];
 
 pub struct Score{
     left_score : u32,
@@ -61,11 +61,12 @@ impl Score{
 }
 
 pub struct Map {
-    blocks: [[bool; BLOCK_COL_COUNT]; BLOCK_ROW_COUNT]
+    blocks: [[bool; BLOCK_COL_COUNT]; BLOCK_ROW_COUNT],
+    pub index: usize
 }
 
 impl Map {
-    pub fn load(map_index: u32) -> Map {
+    pub fn load(map_index: usize) -> Map {
         let mut blocks = [[false; BLOCK_COL_COUNT]; BLOCK_ROW_COUNT];
         let surface = Surface::load_bmp(LEVELS[map_index as usize]).unwrap();
         let pixels = surface.without_lock().unwrap();
@@ -80,7 +81,10 @@ impl Map {
                 blocks[j as usize][i as usize] = block;
             }
         }
-        Map { blocks }
+        Map {
+            blocks,
+            index: map_index
+        }
     }
 
     fn width() -> f32 {
@@ -319,6 +323,14 @@ impl Logic {
             map: Map::load(0),
             is_over: false,
         }
+    }
+
+    pub fn change_map(&mut self){
+        self.score = Score::new();
+        self.left_tank = Tank::new(LEFT_TANK_X0, LEFT_TANK_Y0, 0.);
+        self.right_tank = Tank::new(RIGHT_TANK_X0, RIGHT_TANK_Y0, std::f32::consts::PI);
+        self.map = Map::load(( self.map.index + 1 ) % LEVELS.len()  );
+        self.is_over = false;
     }
 
     /// Update each entity of a delta of time and check if the game is over.
