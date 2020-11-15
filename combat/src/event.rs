@@ -2,9 +2,10 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 
 use crate::logic::Logic;
+use crate::audio::Audio;
 
 /// Call the logic command accordingly to the input
-pub fn handle_event(event: Event, logic: &mut Logic) {
+pub fn handle_event(event: Event, logic: &mut Logic, audio: &Audio) {
     match event {
         Event::Quit { .. } |
         Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
@@ -17,10 +18,14 @@ pub fn handle_event(event: Event, logic: &mut Logic) {
             logic.left_tank.decelerate();
         }
         Event::KeyDown { keycode: Some(Keycode::Down), repeat: false, .. } => {
-            logic.left_tank.fire();
+            if logic.left_tank.fire(){
+                audio.play_left_shoot();
+            }
         }
         Event::KeyDown { keycode: Some(Keycode::S), repeat: false, .. } => {
-            logic.right_tank.fire();
+            if logic.right_tank.fire(){
+                audio.play_right_shoot();
+            }
         }
         Event::KeyDown { keycode: Some(Keycode::Z), repeat: false, .. } => {
             logic.right_tank.accelerate();

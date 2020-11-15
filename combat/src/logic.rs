@@ -189,7 +189,7 @@ impl Tank {
             solid,
             shell: Shell::new(),
             orientation,
-            rotation_delay: 0.,
+            rotation_delay: TANK_ROTATION_DELAY,
             is_impacted: false,
             impact_delay: 0.,
         }
@@ -207,24 +207,25 @@ impl Tank {
 
     pub fn impact(&mut self, angle: f32) {
         if self.is_impacted { () }
-
-        self.is_impacted = true;
         self.orientation = angle;
         self.accelerate();
+        self.is_impacted = true;
     }
 
-    pub fn accelerate(&mut self) {
-        if self.is_impacted { () }
+    pub fn accelerate(&mut self) -> bool {
+        if self.is_impacted { return false }
 
         self.solid.vel.set_vx(TANK_VELOCITY * self.orientation.cos());
         self.solid.vel.set_vy(TANK_VELOCITY * self.orientation.sin());
+        return true
     }
 
-    pub fn decelerate(&mut self) {
-        if self.is_impacted { () }
+    pub fn decelerate(&mut self) -> bool {
+        if self.is_impacted { return false }
 
         self.solid.vel.set_vx(0.);
         self.solid.vel.set_vy(0.);
+        return true
     }
 
     fn turn(&mut self, dir: bool) {
@@ -234,34 +235,46 @@ impl Tank {
         self.solid.vel.set_vy(v * self.orientation.sin());
     }
 
-    pub fn turn_left(&mut self) {
-        if self.is_impacted { () }
-
-        if self.rotation_delay < TANK_ROTATION_DELAY {
-            return;
-        }
-        self.rotation_delay = 0.;
-        self.turn(false)
+    pub fn is_turning(&self) -> bool{
+        self.rotation_delay < TANK_ROTATION_DELAY
     }
 
-    pub fn turn_right(&mut self) {
-        if self.is_impacted { () }
+    pub fn is_moving(&self) -> bool{
+        self.solid.vel.mag() > 0.0001
+    }
+
+    pub fn turn_left(&mut self) -> bool {
+        if self.is_impacted { return false }
 
         if self.rotation_delay < TANK_ROTATION_DELAY {
-            return;
+            return false;
+        }
+        self.rotation_delay = 0.;
+        self.turn(false);
+        return true
+    }
+
+    pub fn turn_right(&mut self) -> bool {
+        if self.is_impacted { return false }
+
+        if self.rotation_delay < TANK_ROTATION_DELAY {
+            return false;
         }
         self.rotation_delay = 0.;
 
-        self.turn(true)
+        self.turn(true);
+        return true
     }
 
-    pub fn fire(&mut self) {
-        if self.is_impacted { () }
+    pub fn fire(&mut self) -> bool {
+        if self.is_impacted { return false }
 
         if self.shell.is_destroyed {
             let rect = self.solid.as_rect();
             self.shell.launch(rect.xc(), rect.yc(), self.orientation);
+            return true;
         }
+        return false
     }
 
     fn update(&mut self, dt: f32) {

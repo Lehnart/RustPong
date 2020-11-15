@@ -1,6 +1,7 @@
 use crate::logic::{Shell, Map, BLOCK_COL_COUNT, BLOCK_ROW_COUNT, Tank};
 use engine::geometry::AsRect;
 use engine::collide::collide;
+use crate::audio::Audio;
 
 pub fn collide_shell_and_map(shell: &mut Shell, map: &Map) {
     let shell_rect = shell.as_rect();
