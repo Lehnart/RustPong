@@ -41,7 +41,7 @@ impl Audio {
 
         if logic.left_tank.is_moving() {
             if !self.left_tank_move_channel.is_playing() {
-                self.left_tank_move_channel.play(&self.forward, -1);
+                self.left_tank_move_channel.play(&self.forward, -1).unwrap();
             }
         }
         else {
@@ -52,7 +52,7 @@ impl Audio {
 
         if logic.left_tank.is_turning() {
             if !self.left_tank_turn_channel.is_playing() {
-                self.left_tank_turn_channel.play(&self.turning, -1);
+                self.left_tank_turn_channel.play(&self.turning, -1).unwrap();
             }
         }
         else {
@@ -60,19 +60,42 @@ impl Audio {
                 self.left_tank_turn_channel.halt();
             }
         }
+
+
+        if logic.right_tank.is_moving() {
+            if !self.right_tank_move_channel.is_playing() {
+                self.right_tank_move_channel.play(&self.forward, -1).unwrap();
+            }
+        }
+        else {
+            if self.right_tank_move_channel.is_playing(){
+                self.right_tank_move_channel.halt();
+            }
+        }
+
+        if logic.right_tank.is_turning() {
+            if !self.right_tank_turn_channel.is_playing() {
+                self.right_tank_turn_channel.play(&self.turning, -1).unwrap();
+            }
+        }
+        else {
+            if self.right_tank_turn_channel.is_playing(){
+                self.right_tank_turn_channel.halt();
+            }
+        }
     }
 
     pub fn play_left_explosion(&self) {
-        self.left_tank_fire_channel.play(&self.explosion,0);
+        self.left_tank_fire_channel.play(&self.explosion,0).unwrap();
     }
 
     pub fn play_right_explosion(&self) {
-        self.right_tank_fire_channel.play(&self.explosion,0);
+        self.right_tank_fire_channel.play(&self.explosion,0).unwrap();
     }
     pub fn play_left_shoot(&self) {
-        self.left_tank_fire_channel.play(&self.shoot,0);
+        self.left_tank_fire_channel.play(&self.shoot,0).unwrap();
     }
     pub fn play_right_shoot(&self) {
-        self.right_tank_fire_channel.play(&self.shoot,0);
+        self.right_tank_fire_channel.play(&self.shoot,0).unwrap();
     }
 }

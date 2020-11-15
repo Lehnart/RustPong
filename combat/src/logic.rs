@@ -18,7 +18,7 @@ pub const TANK_IMPACT_DELAY: f32 = 0.5;
 
 pub const SHELL_WIDTH: f32 = 0.005;
 pub const SHELL_HEIGHT: f32 = 0.005;
-pub const SHELL_VELOCITY: f32 = 0.30;
+pub const SHELL_VELOCITY: f32 = 0.50;
 
 pub const LEFT_TANK_X0: f32 = 0.06;
 pub const LEFT_TANK_Y0: f32 = 0.50;
@@ -27,45 +27,53 @@ pub const RIGHT_TANK_Y0: f32 = 0.50;
 
 pub const BLOCK_ROW_COUNT: usize = 30;
 pub const BLOCK_COL_COUNT: usize = 30;
-pub const LEVELS: [&str; 3] = ["res/level_1.bmp","res/level_2.bmp","res/level_3.bmp"];
+pub const LEVELS: [&str; 3] = ["res/level_1.bmp", "res/level_2.bmp", "res/level_3.bmp"];
 
-pub struct Score{
-    left_score : u32,
-    right_score : u32,
+/// Score of the game is one score per tank
+pub struct Score {
+    left_score: u32,
+    right_score: u32,
 }
 
-impl Score{
-
-    pub fn new()-> Score{
-        Score{
-            left_score:0,
-            right_score:0
+impl Score {
+    /// Starting at 0 score for each tank
+    pub fn new() -> Score {
+        Score {
+            left_score: 0,
+            right_score: 0,
         }
     }
 
-    pub fn point_left(&mut self){
-        self.left_score +=1;
+    /// Add a point for left tank
+    pub fn point_left(&mut self) {
+        self.left_score += 1;
     }
 
-    pub fn point_right(&mut self){
-        self.right_score +=1;
+    /// Add a point for right tank
+    pub fn point_right(&mut self) {
+        self.right_score += 1;
     }
 
-    pub fn get_left_score(&self) -> u32{
+    pub fn get_left_score(&self) -> u32 {
         return self.left_score;
     }
-    pub fn get_right_score(&self)-> u32{
+
+    pub fn get_right_score(&self) -> u32 {
         return self.right_score;
     }
-
 }
 
+/// Represents the current level
 pub struct Map {
+    /// A map is a grid of blocks that can exist or not
     blocks: [[bool; BLOCK_COL_COUNT]; BLOCK_ROW_COUNT],
-    pub index: usize
+
+    /// Index of the current level
+    pub index: usize,
 }
 
 impl Map {
+    /// Load the map at the given index
     pub fn load(map_index: usize) -> Map {
         let mut blocks = [[false; BLOCK_COL_COUNT]; BLOCK_ROW_COUNT];
         let surface = Surface::load_bmp(LEVELS[map_index as usize]).unwrap();
@@ -83,7 +91,7 @@ impl Map {
         }
         Map {
             blocks,
-            index: map_index
+            index: map_index,
         }
     }
 
@@ -94,6 +102,7 @@ impl Map {
         (BOARD_BOTTOM_LIMIT - BOARD_TOP_LIMIT) as f32 / BLOCK_ROW_COUNT as f32
     }
 
+    /// Get the rectangle representing a block at a given row and column of the grid
     pub fn get_block(&self, i: u32, j: u32) -> Option<Rect> {
         let block = self.blocks[j as usize][i as usize];
         let w = Map::width();
@@ -113,6 +122,7 @@ impl Map {
     }
 }
 
+/// A shell is a bullet fired by a tank
 pub struct Shell {
     solid: Solid,
     is_destroyed: bool,
@@ -141,6 +151,7 @@ impl Shell {
         self.is_destroyed = true;
     }
 
+    /// When a tank fire, the shell is launched in front in the tank
     fn launch(&mut self, x0: f32, y0: f32, angle: f32) {
         self.is_destroyed = false;
         let pos = Position::new(x0 - (SHELL_WIDTH as f32 / 2.), y0 - (SHELL_HEIGHT as f32 / 2.));
@@ -151,7 +162,6 @@ impl Shell {
 
     fn update(&mut self, dt: f32) {
         self.solid.update(dt);
-        Map::load(0);
     }
 
     pub fn get_orientation(&self) -> f32 {
@@ -165,7 +175,9 @@ impl AsRect for Shell {
     }
 }
 
-
+/// Each player is represented by a tank.
+/// It has an orientation which gives the move direction and the shell direction when launched.
+/// The tank has an impact state, live for a given delay, when it is hit by a shell.
 pub struct Tank {
     solid: Solid,
     pub shell: Shell,
@@ -176,6 +188,8 @@ pub struct Tank {
 }
 
 impl Tank {
+
+    /// Create a tank at a given position and a given orientation
     pub fn new(x0: f32, y0: f32, orientation: f32) -> Tank {
         let pos = Position::new(x0, y0);
         let vel = Velocity::new(0., 0.);
@@ -205,6 +219,7 @@ impl Tank {
 
     pub fn is_impacted(&self) -> bool { self.is_impacted }
 
+    /// When hit by a shell, the tank is impacted and is pushed backward, in the direction of the incoming shell.
     pub fn impact(&mut self, angle: f32) {
         if self.is_impacted { () }
         self.orientation = angle;
@@ -213,19 +228,19 @@ impl Tank {
     }
 
     pub fn accelerate(&mut self) -> bool {
-        if self.is_impacted { return false }
+        if self.is_impacted { return false; }
 
         self.solid.vel.set_vx(TANK_VELOCITY * self.orientation.cos());
         self.solid.vel.set_vy(TANK_VELOCITY * self.orientation.sin());
-        return true
+        return true;
     }
 
     pub fn decelerate(&mut self) -> bool {
-        if self.is_impacted { return false }
+        if self.is_impacted { return false; }
 
         self.solid.vel.set_vx(0.);
         self.solid.vel.set_vy(0.);
-        return true
+        return true;
     }
 
     fn turn(&mut self, dir: bool) {
@@ -235,27 +250,27 @@ impl Tank {
         self.solid.vel.set_vy(v * self.orientation.sin());
     }
 
-    pub fn is_turning(&self) -> bool{
+    pub fn is_turning(&self) -> bool {
         self.rotation_delay < TANK_ROTATION_DELAY
     }
 
-    pub fn is_moving(&self) -> bool{
+    pub fn is_moving(&self) -> bool {
         self.solid.vel.mag() > 0.0001
     }
 
     pub fn turn_left(&mut self) -> bool {
-        if self.is_impacted { return false }
+        if self.is_impacted { return false; }
 
         if self.rotation_delay < TANK_ROTATION_DELAY {
             return false;
         }
         self.rotation_delay = 0.;
         self.turn(false);
-        return true
+        return true;
     }
 
     pub fn turn_right(&mut self) -> bool {
-        if self.is_impacted { return false }
+        if self.is_impacted { return false; }
 
         if self.rotation_delay < TANK_ROTATION_DELAY {
             return false;
@@ -263,18 +278,19 @@ impl Tank {
         self.rotation_delay = 0.;
 
         self.turn(true);
-        return true
+        return true;
     }
 
+    /// Fire a shell if the rpevious one is destroyed.
     pub fn fire(&mut self) -> bool {
-        if self.is_impacted { return false }
+        if self.is_impacted { return false; }
 
         if self.shell.is_destroyed {
             let rect = self.solid.as_rect();
             self.shell.launch(rect.xc(), rect.yc(), self.orientation);
             return true;
         }
-        return false
+        return false;
     }
 
     fn update(&mut self, dt: f32) {
@@ -293,17 +309,9 @@ impl Tank {
 
         self.solid.update(dt);
         self.shell.update(dt);
-
-        // TODO : a déplacer dans la gestion des collisions
-        let shell_rect = self.shell.as_rect();
-        if shell_rect.xc() > BOARD_RIGHT_LIMIT || shell_rect.xc() < BOARD_LEFT_LIMIT {
-            self.shell.destroy();
-        }
-        if shell_rect.yc() > BOARD_BOTTOM_LIMIT || shell_rect.yc() < BOARD_TOP_LIMIT {
-            self.shell.destroy();
-        }
     }
 
+    /// Move backward the tank if a collision has happen
     pub fn move_back(&mut self, dt: f32) {
         self.solid.update(-dt);
     }
@@ -317,9 +325,8 @@ impl AsRect for Tank {
 
 
 /// Logic is a structure that contains all entities from the game.
-///
 pub struct Logic {
-    pub score : Score,
+    pub score: Score,
     pub left_tank: Tank,
     pub right_tank: Tank,
     pub map: Map,
@@ -330,7 +337,7 @@ impl Logic {
     /// Create a new game logic with default values for game settings
     pub fn new() -> Logic {
         Logic {
-            score : Score::new(),
+            score: Score::new(),
             left_tank: Tank::new(LEFT_TANK_X0, LEFT_TANK_Y0, 0.),
             right_tank: Tank::new(RIGHT_TANK_X0, RIGHT_TANK_Y0, std::f32::consts::PI),
             map: Map::load(0),
@@ -338,11 +345,12 @@ impl Logic {
         }
     }
 
-    pub fn change_map(&mut self){
+    /// Change current map, reseting the score and the tank positions.
+    pub fn change_map(&mut self) {
         self.score = Score::new();
         self.left_tank = Tank::new(LEFT_TANK_X0, LEFT_TANK_Y0, 0.);
         self.right_tank = Tank::new(RIGHT_TANK_X0, RIGHT_TANK_Y0, std::f32::consts::PI);
-        self.map = Map::load(( self.map.index + 1 ) % LEVELS.len()  );
+        self.map = Map::load((self.map.index + 1) % LEVELS.len());
         self.is_over = false;
     }
 
