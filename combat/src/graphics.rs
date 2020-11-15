@@ -1,13 +1,14 @@
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::WindowCanvas;
+use sdl2::ttf::Sdl2TtfContext;
 
 use engine::geometry;
 use engine::geometry::AsRect;
 use engine::graphics::{RectSprite, RenderedString, Sprite, Window};
 
 use crate::logic::{BLOCK_COL_COUNT, BLOCK_ROW_COUNT, BOARD_BOTTOM_LIMIT, BOARD_LEFT_LIMIT, BOARD_RIGHT_LIMIT, BOARD_TOP_LIMIT, BOARD_TOP_LIMIT_HEIGHT, Logic, Map, TANK_HEIGHT, TANK_WIDTH};
-use sdl2::ttf::Sdl2TtfContext;
+use crate::logic;
 
 pub const FONT_PATH: &str = "res/atari.ttf";
 pub const FONT_SIZE: u16 = 96;
@@ -29,6 +30,8 @@ pub const RIGHT_SCORE_POSITION_X: i32 = 500;
 pub const RIGHT_SCORE_POSITION_Y: i32 = 50;
 pub const RIGHT_SCORE_COLOR: Color = RIGHT_TANK_COLOR;
 
+/// A decor is the graphics counterpart of the map in the game.
+/// It is a grid of rectangle figures.
 pub struct Decor {
     blocks: [[RectSprite; BLOCK_COL_COUNT]; BLOCK_ROW_COUNT],
     x_shift: i32,
@@ -36,6 +39,7 @@ pub struct Decor {
 }
 
 impl Decor {
+    /// Create a grid of rect that will be updated accordingly to a map
     pub fn new(x_shift: i32, y_shift: i32, canvas_width: u32) -> Decor {
         let ys = y_shift as f32 + (canvas_width as f32 * BOARD_TOP_LIMIT);
         let xs = x_shift as f32 + (canvas_width as f32 * BOARD_LEFT_LIMIT);
@@ -48,6 +52,7 @@ impl Decor {
         }
     }
 
+    /// Update the grid of rectangle
     fn update(&mut self, map: &Map) {
         for j in 0..BLOCK_ROW_COUNT {
             for i in 0..BLOCK_COL_COUNT {
@@ -67,6 +72,7 @@ impl Decor {
         }
     }
 
+    /// Draw to the screen the decor
     fn draw(&self, canvas: &mut WindowCanvas) {
         for j in 0..BLOCK_ROW_COUNT {
             for i in 0..BLOCK_COL_COUNT {
@@ -77,15 +83,104 @@ impl Decor {
     }
 }
 
-pub struct Graphics<'a> {
-    left_tank: Sprite<'a>,
-    left_shell: RectSprite,
-    right_tank: Sprite<'a>,
-    right_shell: RectSprite,
+/// Limit of the game board as 4 rectangles.
+pub struct Limit {
     left_limit: RectSprite,
     right_limit: RectSprite,
     top_limit: RectSprite,
     bottom_limit: RectSprite,
+}
+
+impl Limit {
+    pub fn new(y_shift: i32) -> Limit {
+        let left_limit = RectSprite::new(0, y_shift, LIMIT_COLOR);
+        let right_limit = RectSprite::new(0, y_shift, LIMIT_COLOR);
+        let top_limit = RectSprite::new(0, y_shift, LIMIT_COLOR);
+        let bottom_limit = RectSprite::new(0, y_shift, LIMIT_COLOR);
+
+        Limit {
+            left_limit,
+            right_limit,
+            top_limit,
+            bottom_limit,
+        }
+
+    }
+
+    pub fn update(&mut self, w:u32){
+        self.left_limit.update(
+            geometry::Rect::from_2_points(0., BOARD_TOP_LIMIT - BOARD_TOP_LIMIT_HEIGHT, BOARD_LEFT_LIMIT, 1.01),
+            w,
+            w
+        );
+        self.top_limit.update(
+            geometry::Rect::from_2_points(0., 0., 1.01, BOARD_TOP_LIMIT),
+            w,
+            w
+        );
+        self.right_limit.update(
+            geometry::Rect::from_2_points(BOARD_RIGHT_LIMIT, BOARD_TOP_LIMIT - BOARD_TOP_LIMIT_HEIGHT, 1.01, 1.01),
+            w,
+            w
+        );
+        self.bottom_limit.update(
+            geometry::Rect::from_2_points(0., BOARD_BOTTOM_LIMIT, 1.01, 1.01),
+            w,
+            w
+        );
+    }
+
+    pub fn draw(&self, canvas : &mut WindowCanvas){
+        self.left_limit.draw(canvas);
+        self.right_limit.draw(canvas);
+        self.top_limit.draw(canvas);
+        self.bottom_limit.draw(canvas);
+    }
+}
+
+/// Graphics representation of the tank and of his bullet
+pub struct Tank<'a>{
+    tank: Sprite<'a>,
+    shell: RectSprite,
+}
+
+impl Tank<'_>{
+    pub fn new(y_shift:i32, color:Color,canvas_width : u32) -> Tank<'static>{
+        let tank_rect = Rect::new(0, 0, (TANK_WIDTH * canvas_width as f32) as u32, (TANK_HEIGHT * canvas_width as f32) as u32);
+        let tank = Sprite::new(0,y_shift,TANK_SPRITE_PATH,tank_rect,color);
+        let shell = RectSprite::new(0,y_shift,color);
+        Tank{
+            tank,
+            shell,
+        }
+    }
+
+    pub fn update(&mut self, logic_tank : &logic::Tank, w:u32){
+        let mut tank_angle =  logic_tank.get_orientation().to_degrees() as f64;
+        if logic_tank.is_impacted() {
+            tank_angle = self.tank.angle + 45.;
+        }
+        self.tank.update(logic_tank.as_rect(), tank_angle, w, w);
+        let logic_shell = logic_tank.get_shell();
+
+        if logic_shell.is_destroyed() {
+            self.shell.hide();
+        } else {
+            self.shell.show();
+            self.shell.update(logic_shell.as_rect(), w, w);
+        }
+    }
+
+    pub fn draw(&self, canvas : &mut WindowCanvas){
+        self.shell.draw(canvas);
+        self.tank.draw(canvas);
+    }
+}
+
+pub struct Graphics<'a> {
+    left_tank : Tank<'a>,
+    right_tank : Tank<'a>,
+    limit: Limit,
     decor: Decor,
     left_score: String,
     right_score: String,
@@ -96,68 +191,18 @@ impl Graphics<'_> {
     pub fn new<'a>(canvas_width: u32, canvas_height: u32) -> Graphics<'a> {
         let y_shift = (canvas_height - canvas_width) as i32;
 
-        let left_tank = Sprite::new(
-            0,
-            y_shift,
-            TANK_SPRITE_PATH,
-            Rect::new(0, 0, (TANK_WIDTH * canvas_width as f32) as u32, (TANK_HEIGHT * canvas_width as f32) as u32),
-            LEFT_TANK_COLOR);
-
-        let left_shell = RectSprite::new(
-            0,
-            y_shift,
-            LEFT_TANK_COLOR,
-        );
-
-        let right_tank = Sprite::new(
-            0,
-            y_shift,
-            TANK_SPRITE_PATH,
-            Rect::new(0, 0, (TANK_WIDTH * canvas_width as f32) as u32, (TANK_HEIGHT * canvas_width as f32) as u32),
-            RIGHT_TANK_COLOR);
-
-        let right_shell = RectSprite::new(
-            0,
-            y_shift,
-            RIGHT_TANK_COLOR,
-        );
-
-        let left_limit = RectSprite::new(
-            0,
-            y_shift,
-            LIMIT_COLOR);
-
-        let right_limit = RectSprite::new(
-            0,
-            y_shift,
-            LIMIT_COLOR,
-        );
-
-        let top_limit = RectSprite::new(
-            0,
-            y_shift,
-            LIMIT_COLOR,
-        );
-
-        let bottom_limit = RectSprite::new(
-            0,
-            y_shift,
-            LIMIT_COLOR,
-        );
-
+        let left_tank = Tank::new(y_shift,LEFT_TANK_COLOR, canvas_width);
+        let right_tank = Tank::new(y_shift,RIGHT_TANK_COLOR, canvas_width);
+        let limit = Limit::new(y_shift);
         let decor = Decor::new(0, y_shift, canvas_width);
 
         let left_score = "0".parse().unwrap();
         let right_score = "0".parse().unwrap();
+
         Graphics {
             left_tank,
-            left_shell,
             right_tank,
-            right_shell,
-            left_limit,
-            right_limit,
-            top_limit,
-            bottom_limit,
+            limit,
             decor,
             left_score,
             right_score,
@@ -168,40 +213,10 @@ impl Graphics<'_> {
     pub fn update(&mut self, logic: &Logic, window: &Window) {
         let w = window.width();
 
-        let mut left_tank_angle = logic.left_tank.get_orientation().to_degrees() as f64;
-        if logic.left_tank.is_impacted() {
-            left_tank_angle = self.left_tank.angle + 45.;
-        }
-        self.left_tank.update(logic.left_tank.as_rect(), left_tank_angle, w, w);
+        self.left_tank.update(&logic.left_tank,w);
+        self.right_tank.update(&logic.right_tank,w);
 
-        let mut right_tank_angle = logic.right_tank.get_orientation().to_degrees() as f64;
-        if logic.right_tank.is_impacted() {
-            right_tank_angle = self.right_tank.angle + 45.;
-        }
-        self.right_tank.update(logic.right_tank.as_rect(), right_tank_angle, w, w);
-        let left_shell = logic.left_tank.get_shell();
-        let right_shell = logic.right_tank.get_shell();
-
-
-        if left_shell.is_destroyed() {
-            self.left_shell.hide();
-        } else {
-            self.left_shell.show();
-            self.left_shell.update(left_shell.as_rect(), w, w);
-        }
-        if right_shell.is_destroyed() {
-            self.right_shell.hide();
-        } else {
-            self.right_shell.show();
-            self.right_shell.update(right_shell.as_rect(), w, w);
-        }
-
-        self.left_limit.update(geometry::Rect::from_2_points(0., BOARD_TOP_LIMIT - BOARD_TOP_LIMIT_HEIGHT, BOARD_LEFT_LIMIT, 1.01), w, w);
-        self.top_limit.update(geometry::Rect::from_2_points(0., 0., 1.01, BOARD_TOP_LIMIT), w, w);
-
-        self.right_limit.update(geometry::Rect::from_2_points(BOARD_RIGHT_LIMIT, BOARD_TOP_LIMIT - BOARD_TOP_LIMIT_HEIGHT, 1.01, 1.01), w, w);
-        self.bottom_limit.update(geometry::Rect::from_2_points(0., BOARD_BOTTOM_LIMIT, 1.01, 1.01), w, w);
-
+        self.limit.update(w);
         self.decor.update(&logic.map);
 
         self.left_score = logic.score.get_left_score().to_string();
@@ -216,14 +231,10 @@ impl Graphics<'_> {
         window.clear();
 
         let canvas = &mut window.canvas;
+
         self.left_tank.draw(canvas);
         self.right_tank.draw(canvas);
-        self.left_shell.draw(canvas);
-        self.right_shell.draw(canvas);
-        self.left_limit.draw(canvas);
-        self.top_limit.draw(canvas);
-        self.right_limit.draw(canvas);
-        self.bottom_limit.draw(canvas);
+        self.limit.draw(canvas);
         self.decor.draw(canvas);
 
         let rendered_left_score = RenderedString::new_colored
@@ -234,7 +245,7 @@ impl Graphics<'_> {
                 ttf_context,
                 FONT_PATH,
                 FONT_SIZE,
-            LEFT_SCORE_COLOR
+                LEFT_SCORE_COLOR,
             );
         rendered_left_score.draw(canvas);
 
@@ -246,7 +257,7 @@ impl Graphics<'_> {
                 ttf_context,
                 FONT_PATH,
                 FONT_SIZE,
-                RIGHT_SCORE_COLOR
+                RIGHT_SCORE_COLOR,
             );
         rendered_right_score.draw(canvas);
 
