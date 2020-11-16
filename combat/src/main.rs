@@ -23,7 +23,7 @@ fn main() {
     let mut audio = Audio::new();
     let mut logic = Logic::new();
     let mut window = Window::new(WINDOW_WIDTH, WINDOW_HEIGHT);
-    let mut graphics = Graphics::new(WINDOW_WIDTH,WINDOW_HEIGHT);
+    let mut graphics = Graphics::new(WINDOW_WIDTH,WINDOW_HEIGHT, &ttf_context);
 
     let mut previous = SystemTime::now();
     'game_loop: loop {
@@ -45,7 +45,7 @@ fn main() {
         audio.update(&logic);
         check_collision(&mut logic, dt, &audio);
 
-        graphics.update(&logic, &window);
-        graphics.draw(&mut window, &ttf_context);
+        graphics.update(&logic, &window, &ttf_context);
+        graphics.draw(&mut window);
     }
 }

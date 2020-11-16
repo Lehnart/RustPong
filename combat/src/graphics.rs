@@ -104,33 +104,32 @@ impl Limit {
             top_limit,
             bottom_limit,
         }
-
     }
 
-    pub fn update(&mut self, w:u32){
+    pub fn update(&mut self, w: u32) {
         self.left_limit.update(
             geometry::Rect::from_2_points(0., BOARD_TOP_LIMIT - BOARD_TOP_LIMIT_HEIGHT, BOARD_LEFT_LIMIT, 1.01),
             w,
-            w
+            w,
         );
         self.top_limit.update(
             geometry::Rect::from_2_points(0., 0., 1.01, BOARD_TOP_LIMIT),
             w,
-            w
+            w,
         );
         self.right_limit.update(
             geometry::Rect::from_2_points(BOARD_RIGHT_LIMIT, BOARD_TOP_LIMIT - BOARD_TOP_LIMIT_HEIGHT, 1.01, 1.01),
             w,
-            w
+            w,
         );
         self.bottom_limit.update(
             geometry::Rect::from_2_points(0., BOARD_BOTTOM_LIMIT, 1.01, 1.01),
             w,
-            w
+            w,
         );
     }
 
-    pub fn draw(&self, canvas : &mut WindowCanvas){
+    pub fn draw(&self, canvas: &mut WindowCanvas) {
         self.left_limit.draw(canvas);
         self.right_limit.draw(canvas);
         self.top_limit.draw(canvas);
@@ -138,25 +137,95 @@ impl Limit {
     }
 }
 
+pub struct Score<'a> {
+    left_score: String,
+    right_score: String,
+    rendered_left_score: RenderedString<'a>,
+    rendered_right_score: RenderedString<'a>,
+}
+
+impl Score<'_> {
+    pub fn new(ttf_context: &Sdl2TtfContext) -> Score {
+        let left_score = "0".parse().unwrap();
+        let right_score = "0".parse().unwrap();
+
+        Score {
+            left_score,
+            right_score,
+            rendered_left_score: RenderedString::new_colored(
+                &"0".parse().unwrap(),
+                LEFT_SCORE_POSITION_X,
+                LEFT_SCORE_POSITION_Y,
+                ttf_context,
+                FONT_PATH,
+                FONT_SIZE,
+                LEFT_SCORE_COLOR,
+            ),
+            rendered_right_score: RenderedString::new_colored(
+                &"0".parse().unwrap(),
+                RIGHT_SCORE_POSITION_X,
+                RIGHT_SCORE_POSITION_Y,
+                ttf_context,
+                FONT_PATH,
+                FONT_SIZE,
+                RIGHT_SCORE_COLOR,
+            ),
+        }
+    }
+
+    pub fn update(&mut self, logic: &Logic, ttf_context: &Sdl2TtfContext) {
+        if !self.left_score.eq(&logic.score.get_left_score().to_string()) {
+            self.left_score = logic.score.get_left_score().to_string();
+            self.rendered_left_score = RenderedString::new_colored(
+                &self.left_score,
+                LEFT_SCORE_POSITION_X,
+                LEFT_SCORE_POSITION_Y,
+                ttf_context,
+                FONT_PATH,
+                FONT_SIZE,
+                LEFT_SCORE_COLOR,
+            )
+        }
+
+        if !self.right_score.eq(&logic.score.get_right_score().to_string()) {
+            self.right_score = logic.score.get_right_score().to_string();
+            self.rendered_right_score = RenderedString::new_colored(
+                &self.right_score,
+                RIGHT_SCORE_POSITION_X,
+                RIGHT_SCORE_POSITION_Y,
+                ttf_context,
+                FONT_PATH,
+                FONT_SIZE,
+                RIGHT_SCORE_COLOR,
+            )
+        }
+    }
+
+    pub fn draw(&self, canvas: &mut WindowCanvas) {
+        self.rendered_right_score.draw(canvas);
+        self.rendered_left_score.draw(canvas);
+    }
+}
+
 /// Graphics representation of the tank and of his bullet
-pub struct Tank<'a>{
+pub struct Tank<'a> {
     tank: Sprite<'a>,
     shell: RectSprite,
 }
 
-impl Tank<'_>{
-    pub fn new(y_shift:i32, color:Color,canvas_width : u32) -> Tank<'static>{
+impl Tank<'_> {
+    pub fn new(y_shift: i32, color: Color, canvas_width: u32) -> Tank<'static> {
         let tank_rect = Rect::new(0, 0, (TANK_WIDTH * canvas_width as f32) as u32, (TANK_HEIGHT * canvas_width as f32) as u32);
-        let tank = Sprite::new(0,y_shift,TANK_SPRITE_PATH,tank_rect,color);
-        let shell = RectSprite::new(0,y_shift,color);
-        Tank{
+        let tank = Sprite::new(0, y_shift, TANK_SPRITE_PATH, tank_rect, color);
+        let shell = RectSprite::new(0, y_shift, color);
+        Tank {
             tank,
             shell,
         }
     }
 
-    pub fn update(&mut self, logic_tank : &logic::Tank, w:u32){
-        let mut tank_angle =  logic_tank.get_orientation().to_degrees() as f64;
+    pub fn update(&mut self, logic_tank: &logic::Tank, w: u32) {
+        let mut tank_angle = logic_tank.get_orientation().to_degrees() as f64;
         if logic_tank.is_impacted() {
             tank_angle = self.tank.angle + 45.;
         }
@@ -171,63 +240,57 @@ impl Tank<'_>{
         }
     }
 
-    pub fn draw(&self, canvas : &mut WindowCanvas){
+    pub fn draw(&self, canvas: &mut WindowCanvas) {
         self.shell.draw(canvas);
         self.tank.draw(canvas);
     }
 }
 
 pub struct Graphics<'a> {
-    left_tank : Tank<'a>,
-    right_tank : Tank<'a>,
+    left_tank: Tank<'a>,
+    right_tank: Tank<'a>,
     limit: Limit,
     decor: Decor,
-    left_score: String,
-    right_score: String,
+    score: Score<'a>,
 }
 
 impl Graphics<'_> {
     /// Init the dynamic elements required to draw the game
-    pub fn new<'a>(canvas_width: u32, canvas_height: u32) -> Graphics<'a> {
+    pub fn new<'a>(canvas_width: u32, canvas_height: u32, ttf_context: &'a Sdl2TtfContext) -> Graphics<'a> {
         let y_shift = (canvas_height - canvas_width) as i32;
 
-        let left_tank = Tank::new(y_shift,LEFT_TANK_COLOR, canvas_width);
-        let right_tank = Tank::new(y_shift,RIGHT_TANK_COLOR, canvas_width);
+        let left_tank = Tank::new(y_shift, LEFT_TANK_COLOR, canvas_width);
+        let right_tank = Tank::new(y_shift, RIGHT_TANK_COLOR, canvas_width);
         let limit = Limit::new(y_shift);
         let decor = Decor::new(0, y_shift, canvas_width);
-
-        let left_score = "0".parse().unwrap();
-        let right_score = "0".parse().unwrap();
-
+        let score = Score::new(&ttf_context);
         Graphics {
             left_tank,
             right_tank,
             limit,
             decor,
-            left_score,
-            right_score,
+            score,
         }
     }
 
     /// Update the dynamic elements accordingly to the state of the game.
-    pub fn update(&mut self, logic: &Logic, window: &Window) {
+    pub fn update(&mut self, logic: &Logic, window: &Window, ttf_context: &Sdl2TtfContext) {
         let w = window.width();
 
-        self.left_tank.update(&logic.left_tank,w);
-        self.right_tank.update(&logic.right_tank,w);
+        self.left_tank.update(&logic.left_tank, w);
+        self.right_tank.update(&logic.right_tank, w);
 
         self.limit.update(w);
         self.decor.update(&logic.map);
 
-        self.left_score = logic.score.get_left_score().to_string();
-        self.right_score = logic.score.get_right_score().to_string();
+        self.score.update(logic, ttf_context);
     }
 
     /// Draw the game.
     ///
     /// Start by clearing the all board.
     /// It draws each dynamic element and show the canvas
-    pub fn draw(&self, window: &mut Window, ttf_context: &Sdl2TtfContext) {
+    pub fn draw(&self, window: &mut Window) {
         window.clear();
 
         let canvas = &mut window.canvas;
@@ -236,30 +299,7 @@ impl Graphics<'_> {
         self.right_tank.draw(canvas);
         self.limit.draw(canvas);
         self.decor.draw(canvas);
-
-        let rendered_left_score = RenderedString::new_colored
-            (
-                &self.left_score,
-                LEFT_SCORE_POSITION_X,
-                LEFT_SCORE_POSITION_Y,
-                ttf_context,
-                FONT_PATH,
-                FONT_SIZE,
-                LEFT_SCORE_COLOR,
-            );
-        rendered_left_score.draw(canvas);
-
-        let rendered_right_score = RenderedString::new_colored
-            (
-                &self.right_score,
-                RIGHT_SCORE_POSITION_X,
-                RIGHT_SCORE_POSITION_Y,
-                ttf_context,
-                FONT_PATH,
-                FONT_SIZE,
-                RIGHT_SCORE_COLOR,
-            );
-        rendered_right_score.draw(canvas);
+        self.score.draw(canvas);
 
         canvas.present();
     }
