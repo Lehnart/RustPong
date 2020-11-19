@@ -58,6 +58,19 @@ pub struct Sprite<'a> {
 }
 
 impl Sprite<'_>{
+
+    pub fn simple_new(surf_path : &str, dest_rect : Rect) -> Sprite {
+        let surface = Surface::load_bmp(surf_path).unwrap();
+        Sprite {
+            x_shift:0,
+            y_shift:0,
+            surface,
+            dest_rect,
+            angle : 0.,
+            is_visible: true,
+        }
+    }
+
     pub fn new(x_shift: i32, y_shift: i32, surf_path : &str, dest_rect : Rect, color: Color) -> Sprite {
         let mut surface = Surface::load_bmp(surf_path).unwrap();
         surface.set_color_mod(color);
