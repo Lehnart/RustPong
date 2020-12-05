@@ -23,7 +23,9 @@ pub fn handle_event(event: Event, logic: &mut Logic, audio: &Audio) {
         Event::KeyUp { keycode: Some(Keycode::Right), repeat: false, .. } => {
             logic.spaceship.decelerate();
         }
-
+        Event::KeyDown { keycode: Some(Keycode::Space), repeat: false, .. } => {
+            logic.spaceship.fire();
+        }
         _ => {}
     }
 }

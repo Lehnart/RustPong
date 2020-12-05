@@ -16,7 +16,7 @@ mod collide;
 mod audio;
 
 fn main() {
-    init_audio();
+    init_audio(4);
     let audio = Audio::new();
     let mut logic = Logic::new();
 

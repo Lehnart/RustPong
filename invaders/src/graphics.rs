@@ -11,10 +11,11 @@ use crate::logic::{Logic, SPACESHIP_WIDTH, SPACESHIP_HEIGHT};
 use crate::logic;
 
 pub const SPACESHIP_SPRITE_PATH: &str = "res/sprite/spaceship.bmp";
-
+pub const MISSILE_COLOR : Color = Color::GREEN;
 
 pub struct Spaceship<'a> {
     spaceship: Sprite<'a>,
+    missile : RectSprite,
 }
 
 impl Spaceship<'_> {
@@ -22,16 +23,24 @@ impl Spaceship<'_> {
         let sprite_rect = Rect::new(0, 0, (SPACESHIP_WIDTH * cw as f32) as u32, (SPACESHIP_HEIGHT * ch as f32) as u32);
         let sprite = Sprite::simple_new(SPACESHIP_SPRITE_PATH, sprite_rect);
         Spaceship {
-            spaceship : sprite
+            spaceship : sprite,
+            missile : RectSprite::default(MISSILE_COLOR),
         }
     }
 
     pub fn update(&mut self, logic_spaceship: &logic::Spaceship,cw:u32,ch:u32) {
         self.spaceship.update(logic_spaceship.as_rect(), 0., cw, ch);
+        if logic_spaceship.missile.is_destroyed() {
+            self.missile.hide();
+        } else {
+            self.missile.show();
+            self.missile.update(logic_spaceship.missile.as_rect(), cw, ch);
+        }
     }
 
     pub fn draw(&self, canvas: &mut WindowCanvas) {
         self.spaceship.draw(canvas);
+        self.missile.draw(canvas);
     }
 }
 
