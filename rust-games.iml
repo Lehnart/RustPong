@@ -14,6 +14,7 @@
       <sourceFolder url="file://$MODULE_DIR$/test_ttf/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/combat/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/invaders/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/asteroids/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/arkanoid/target" />
       <excludeFolder url="file://$MODULE_DIR$/breakout/target" />
       <excludeFolder url="file://$MODULE_DIR$/combat/target" />
@@ -24,6 +25,7 @@
       <excludeFolder url="file://$MODULE_DIR$/tes/target" />
       <excludeFolder url="file://$MODULE_DIR$/test_ttf/target" />
       <excludeFolder url="file://$MODULE_DIR$/toto/target" />
+      <excludeFolder url="file://$MODULE_DIR$/asteroids/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

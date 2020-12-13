@@ -1,5 +1,5 @@
 use engine::geometry::{AsRect, Rect};
-use engine::physics::{Position, Solid, Velocity};
+use engine::physics::{Position, RectSolid, Velocity};
 use engine::random::rand;
 
 pub const RACKET_WIDTH: f32 = 0.08;
@@ -36,7 +36,7 @@ pub const LIFE_STARTING_COUNT: u32 = 3;
 /// A racket is a rectangle that can be moved from left to right, trying to reach the ball
 /// in order to not let it pass.
 pub struct Racket {
-    solid: Solid
+    solid: RectSolid
 }
 
 impl Racket {
@@ -48,7 +48,7 @@ impl Racket {
         let h = RACKET_HEIGHT;
         let limit = Rect::from_2_points(BOARD_LEFT_LIMIT_X, 0., BOARD_RIGHT_LIMIT_X, 1.);
 
-        let solid = Solid::new(pos, vel, w, h, limit);
+        let solid = RectSolid::new(pos, vel, w, h, limit);
 
         Racket {
             solid
@@ -93,7 +93,7 @@ impl AsRect for Racket {
 /// The block can be destroyed when collided by the ball.
 /// Each block has a value, which determines the score earned when it is destroyed.
 pub struct Block {
-    solid: Solid,
+    solid: RectSolid,
     value: u8,
     is_destroyed: bool,
 }
@@ -102,7 +102,7 @@ impl Block {
     /// Create a new block add the given position with a given value.
     pub fn new(x: f32, y: f32, value: u8) -> Block {
         Block {
-            solid: Solid::fixed(x, y, BLOCK_WIDTH, BLOCK_HEIGHT),
+            solid: RectSolid::fixed(x, y, BLOCK_WIDTH, BLOCK_HEIGHT),
             value,
             is_destroyed: false,
         }
@@ -156,7 +156,7 @@ impl Blocks {
 /// It is reflected on rackets.
 ///
 pub struct Ball {
-    solid: Solid
+    solid: RectSolid
 }
 
 impl Ball {
@@ -168,7 +168,7 @@ impl Ball {
         let limit = Rect::from_2_points(0., 0., 1., 2.);
 
         Ball {
-            solid: Solid::new(pos, vel, BALL_DIM, BALL_DIM, limit)
+            solid: RectSolid::new(pos, vel, BALL_DIM, BALL_DIM, limit)
         }
     }
 

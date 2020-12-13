@@ -1,7 +1,7 @@
 use sdl2::surface::Surface;
 
 use engine::geometry::{AsRect, Rect};
-use engine::physics::{Position, Solid, Velocity};
+use engine::physics::{Position, RectSolid, Velocity};
 
 pub const BOARD_LEFT_LIMIT: f32 = 0.05;
 pub const BOARD_RIGHT_LIMIT: f32 = 0.95;
@@ -124,7 +124,7 @@ impl Map {
 
 /// A shell is a bullet fired by a tank
 pub struct Shell {
-    solid: Solid,
+    solid: RectSolid,
     is_destroyed: bool,
 }
 
@@ -136,7 +136,7 @@ impl Shell {
         let h = SHELL_HEIGHT;
         let limit = Rect::from_2_points(-1., -1.0, 2.0, 2.0);
 
-        let solid = Solid::new(pos, vel, w, h, limit);
+        let solid = RectSolid::new(pos, vel, w, h, limit);
         Shell {
             solid,
             is_destroyed: true,
@@ -179,7 +179,7 @@ impl AsRect for Shell {
 /// It has an orientation which gives the move direction and the shell direction when launched.
 /// The tank has an impact state, live for a given delay, when it is hit by a shell.
 pub struct Tank {
-    solid: Solid,
+    solid: RectSolid,
     pub shell: Shell,
     orientation: f32,
     rotation_delay: f32,
@@ -197,7 +197,7 @@ impl Tank {
         let h = TANK_HEIGHT;
         let limit = Rect::from_2_points(BOARD_LEFT_LIMIT, BOARD_TOP_LIMIT, BOARD_RIGHT_LIMIT, BOARD_BOTTOM_LIMIT);
 
-        let solid = Solid::new(pos, vel, w, h, limit);
+        let solid = RectSolid::new(pos, vel, w, h, limit);
 
         Tank {
             solid,

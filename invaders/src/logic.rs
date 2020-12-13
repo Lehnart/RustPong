@@ -1,7 +1,7 @@
 use sdl2::surface::Surface;
 
 use engine::geometry::{AsRect, Rect};
-use engine::physics::{Position, Solid, Velocity};
+use engine::physics::{Position, RectSolid, Velocity};
 
 pub const SPACESHIP_WIDTH: f32 = 0.065;
 pub const SPACESHIP_HEIGHT: f32 = 0.0256;
@@ -15,7 +15,7 @@ pub const MISSILE_RECT_WIDTH: f32 = 0.005;
 pub const MISSILE_RECT_HEIGHT: f32 = 0.01;
 
 pub struct Missile {
-    solid: Solid,
+    solid: RectSolid,
     is_destroyed: bool,
 }
 
@@ -26,7 +26,7 @@ impl Missile {
         let limit = Rect::new(0., 0., 1., 1.);
 
         Missile {
-            solid: Solid::new(position, velocity, MISSILE_RECT_WIDTH, MISSILE_RECT_HEIGHT, limit),
+            solid: RectSolid::new(position, velocity, MISSILE_RECT_WIDTH, MISSILE_RECT_HEIGHT, limit),
             is_destroyed: true,
         }
     }
@@ -60,7 +60,7 @@ impl AsRect for Missile {
 
 
 pub struct Spaceship {
-    solid: Solid,
+    solid: RectSolid,
     pub missile: Missile,
     is_destroyed: bool,
     delay_since_explosion: f32,
@@ -73,7 +73,7 @@ impl Spaceship {
         let limit = Rect::new(0., 0., 1., 1.);
 
         Spaceship {
-            solid: Solid::new(position, velocity, SPACESHIP_WIDTH, SPACESHIP_HEIGHT, limit),
+            solid: RectSolid::new(position, velocity, SPACESHIP_WIDTH, SPACESHIP_HEIGHT, limit),
             missile: Missile::new(0., 0.),
             is_destroyed: false,
             delay_since_explosion: 0.,

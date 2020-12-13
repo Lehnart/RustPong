@@ -2,7 +2,7 @@
 use std::f32::consts::PI;
 
 use engine::geometry::{AsRect, Rect};
-use engine::physics::{Position, Solid, Velocity};
+use engine::physics::{Position, RectSolid, Velocity};
 use engine::random::{flip, rand};
 
 use crate::audio::Audio;
@@ -81,7 +81,7 @@ impl Score {
 /// It is used to reflect the ball to the opponent racket.
 ///
 pub struct Racket {
-    solid: Solid
+    solid: RectSolid
 }
 
 impl Racket {
@@ -94,7 +94,7 @@ impl Racket {
         let vel = Velocity::new(0., 0.);
         let limit = Rect::new(0., 0., 1., 1.);
         Racket {
-            solid: Solid::new(pos, vel, RACKET_WIDTH, RACKET_HEIGHT, limit)
+            solid: RectSolid::new(pos, vel, RACKET_WIDTH, RACKET_HEIGHT, limit)
         }
     }
 
@@ -142,7 +142,7 @@ impl AsRect for Racket {
 /// It is reflected on rackets.
 ///
 pub struct Ball {
-    solid: Solid
+    solid: RectSolid
 }
 
 impl Ball {
@@ -159,7 +159,7 @@ impl Ball {
         let limit = Rect::new(-0.1, 0., 1.2, 1.1);
 
         Ball {
-            solid: Solid::new(pos, vel, BALL_DIM, BALL_DIM, limit)
+            solid: RectSolid::new(pos, vel, BALL_DIM, BALL_DIM, limit)
         }
     }
 

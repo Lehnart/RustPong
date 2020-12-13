@@ -1,4 +1,4 @@
-use crate::geometry::{AsRect, Rect};
+use crate::geometry::{AsRect, Rect, AsCircle, Circle};
 
 pub struct Position {
     x: f32,
@@ -72,7 +72,7 @@ impl Velocity {
     }
 }
 
-pub struct Solid {
+pub struct RectSolid {
     pub pos: Position,
     pub vel: Velocity,
     w: f32,
@@ -80,10 +80,10 @@ pub struct Solid {
     limit: Rect,
 }
 
-impl Solid {
-    pub fn new(pos: Position, vel: Velocity, w: f32, h: f32, limit: Rect) -> Solid
+impl RectSolid {
+    pub fn new(pos: Position, vel: Velocity, w: f32, h: f32, limit: Rect) -> RectSolid
     {
-        Solid {
+        RectSolid {
             pos,
             vel,
             w,
@@ -92,12 +92,12 @@ impl Solid {
         }
     }
 
-    pub fn fixed(x: f32, y: f32, w: f32, h: f32) -> Solid
+    pub fn fixed(x: f32, y: f32, w: f32, h: f32) -> RectSolid
     {
         let pos = Position::new(x, y);
         let vel = Velocity::default();
 
-        Solid {
+        RectSolid {
             pos,
             vel,
             w,
@@ -124,8 +124,49 @@ impl Solid {
     }
 }
 
-impl AsRect for Solid {
+impl AsRect for RectSolid {
     fn as_rect(&self) -> Rect {
         Rect::new(self.pos.x, self.pos.y, self.w, self.h)
+    }
+}
+
+pub struct CircleSolid {
+    pub pos: Position,
+    pub vel: Velocity,
+    pub r: f32,
+    limit: Rect,
+}
+
+impl CircleSolid {
+    pub fn new(pos: Position, vel: Velocity, r: f32, limit: Rect) -> CircleSolid
+    {
+        CircleSolid {
+            pos,
+            vel,
+            r,
+            limit,
+        }
+    }
+    pub fn update(&mut self, dt: f32) {
+        self.pos.set_x(self.pos.x + (self.vel.vx * dt));
+        self.pos.set_y(self.pos.y + (self.vel.vy * dt));
+
+        if self.pos.y() < self.limit.y0() {
+            self.pos.set_y(self.limit.y0());
+        } else if self.pos.y() > self.limit.y1() {
+            self.pos.set_y(self.limit.y1());
+        }
+
+        if self.pos.x() < self.limit.x0() {
+            self.pos.set_x(self.limit.x0());
+        } else if self.pos.x() > self.limit.x1() {
+            self.pos.set_x(self.limit.x1());
+        }
+    }
+}
+
+impl AsCircle for CircleSolid {
+    fn as_circle(&self) -> Circle {
+        Circle::new(self.pos.x, self.pos.y, self.r)
     }
 }

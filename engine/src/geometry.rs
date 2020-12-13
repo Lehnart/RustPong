@@ -76,3 +76,39 @@ impl Rect {
 pub trait AsRect {
     fn as_rect(&self) -> Rect;
 }
+
+pub struct Circle {
+    x: f32,
+    y: f32,
+    r: f32,
+}
+
+impl Circle {
+    pub fn new(x: f32, y: f32, r: f32) -> Circle {
+        Circle {
+            x,
+            y,
+            r,
+        }
+    }
+
+    pub fn x(&self) -> f32 {
+        self.x
+    }
+
+    pub fn y(&self) -> f32 {
+        self.y
+    }
+
+    pub fn r(&self) -> f32 {
+        self.r
+    }
+
+    pub fn set_radius(&mut self, r:f32){
+        self.r = r;
+    }
+}
+
+pub trait AsCircle {
+    fn as_circle(&self) -> Circle;
+}
