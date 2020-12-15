@@ -6,10 +6,20 @@ use engine::physics::{CircleSolid, Position, Velocity};
 pub const SPACESHIP_RADIUS: f32 = 0.04;
 pub const SPACESHIP_STARTING_POSITION_X0: f32 = 0.5;
 pub const SPACESHIP_STARTING_POSITION_Y0: f32 = 0.5;
+pub const SPACESHIP_ACCELERATION : f32 = 0.05;
+pub const SPACESHIP_ROTATION_SPEED : f32 = 0.005;
+
+pub enum Turning{
+    NONE,
+    LEFT,
+    RIGHT
+}
 
 pub struct Spaceship {
     solid: CircleSolid,
     orientation: f32,
+    accelerating : bool,
+    turning : Turning
 }
 
 impl Spaceship {
@@ -21,10 +31,42 @@ impl Spaceship {
         Spaceship {
             solid: CircleSolid::new(position, velocity, SPACESHIP_RADIUS, limit),
             orientation: 0.,
+            accelerating: false,
+            turning : Turning::NONE
         }
     }
 
+    pub fn accelerate(&mut self) {
+        self.accelerating = true;
+    }
+
+    pub fn decelerate(&mut self) {
+        self.accelerating = false;
+    }
+
+    pub fn turn(&mut self, turn:Turning){
+        self.turning = turn;
+    }
+
     pub fn update(&mut self, dt: f32) {
+
+        match &self.turning{
+            Turning::LEFT => self.orientation += SPACESHIP_ROTATION_SPEED*dt,
+            Turning::RIGHT => self.orientation -= SPACESHIP_ROTATION_SPEED*dt,
+            Turning::NONE => (),
+        }
+
+        if self.accelerating {
+            let mut vx = self.solid.vel.vx();
+            let mut vy = self.solid.vel.vy();
+
+            vx += SPACESHIP_ACCELERATION*dt*self.orientation.cos();
+            vy += SPACESHIP_ACCELERATION*dt*self.orientation.sin();
+
+            self.solid.vel.set_vx(vx);
+            self.solid.vel.set_vy(vy);
+        }
+
         self.solid.update(dt);
     }
 }
