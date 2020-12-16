@@ -6,8 +6,8 @@ use engine::physics::{CircleSolid, Position, Velocity};
 pub const SPACESHIP_RADIUS: f32 = 0.04;
 pub const SPACESHIP_STARTING_POSITION_X0: f32 = 0.5;
 pub const SPACESHIP_STARTING_POSITION_Y0: f32 = 0.5;
-pub const SPACESHIP_ACCELERATION : f32 = 0.05;
-pub const SPACESHIP_ROTATION_SPEED : f32 = 0.005;
+pub const SPACESHIP_ACCELERATION : f32 = 0.2;
+pub const SPACESHIP_ROTATION_SPEED : f32 = 5.;
 
 pub enum Turning{
     NONE,
@@ -17,7 +17,7 @@ pub enum Turning{
 
 pub struct Spaceship {
     solid: CircleSolid,
-    orientation: f32,
+    pub orientation: f32,
     accelerating : bool,
     turning : Turning
 }
@@ -51,8 +51,8 @@ impl Spaceship {
     pub fn update(&mut self, dt: f32) {
 
         match &self.turning{
-            Turning::LEFT => self.orientation += SPACESHIP_ROTATION_SPEED*dt,
-            Turning::RIGHT => self.orientation -= SPACESHIP_ROTATION_SPEED*dt,
+            Turning::LEFT => self.orientation -= SPACESHIP_ROTATION_SPEED*dt,
+            Turning::RIGHT => self.orientation += SPACESHIP_ROTATION_SPEED*dt,
             Turning::NONE => (),
         }
 

@@ -1,5 +1,5 @@
 use sdl2::pixels::Color;
-use sdl2::rect::Rect;
+use sdl2::rect::{Rect, Point};
 use sdl2::render::WindowCanvas;
 use sdl2::ttf::Sdl2TtfContext;
 
@@ -11,22 +11,36 @@ use crate::logic::Logic;
 use crate::logic;
 
 pub struct Spaceship {
-    sprite: RectSprite
+    sprite: RectSprite,
+    end_point : Point
 }
 
 impl Spaceship {
     pub fn new() -> Spaceship {
         Spaceship {
-            sprite: RectSprite::default(Color::WHITE)
+            sprite: RectSprite::default(Color::WHITE),
+            end_point : Point::new(0,0)
         }
     }
 
     pub fn update(&mut self, logic_spaceship: &logic::Spaceship, w: u32, h: u32) {
+
         self.sprite.update(logic_spaceship.as_rect(), w, h);
+
+        let xc = self.sprite.rect.center().x();
+        let yc = self.sprite.rect.center().y();
+        self.end_point = Point::new(
+            xc + (self.sprite.rect.width() as f32 *logic_spaceship.orientation.cos()) as i32 ,
+            yc + (self.sprite.rect.width() as f32 *logic_spaceship.orientation.sin())  as i32
+        )
     }
 
     pub fn draw(&self, canvas: &mut WindowCanvas) {
+
         self.sprite.draw(canvas);
+        let start =self.sprite.rect.center();
+        canvas.set_draw_color(Color::RED);
+        canvas.draw_line(start,self.end_point);
     }
 }
 
