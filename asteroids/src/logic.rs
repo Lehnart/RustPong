@@ -16,7 +16,7 @@ pub enum Turning{
 }
 
 pub struct Spaceship {
-    solid: CircleSolid,
+    pub solid: CircleSolid,
     pub orientation: f32,
     accelerating : bool,
     turning : Turning

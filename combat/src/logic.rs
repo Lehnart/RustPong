@@ -281,7 +281,7 @@ impl Tank {
         return true;
     }
 
-    /// Fire a shell if the rpevious one is destroyed.
+    /// Fire a shell if the previous one is destroyed.
     pub fn fire(&mut self) -> bool {
         if self.is_impacted { return false; }
 

@@ -12,14 +12,16 @@ use crate::logic;
 
 pub struct Spaceship {
     sprite: RectSprite,
-    end_point : Point
+    orientation_point: Point,
+    speed_point: Point,
 }
 
 impl Spaceship {
     pub fn new() -> Spaceship {
         Spaceship {
             sprite: RectSprite::default(Color::WHITE),
-            end_point : Point::new(0,0)
+            orientation_point: Point::new(0, 0),
+            speed_point: Point::new(0, 0),
         }
     }
 
@@ -29,9 +31,16 @@ impl Spaceship {
 
         let xc = self.sprite.rect.center().x();
         let yc = self.sprite.rect.center().y();
-        self.end_point = Point::new(
+        self.orientation_point = Point::new(
             xc + (self.sprite.rect.width() as f32 *logic_spaceship.orientation.cos()) as i32 ,
             yc + (self.sprite.rect.width() as f32 *logic_spaceship.orientation.sin())  as i32
+        );
+
+        let speed_line_length = logic_spaceship.solid.vel.mag()*(w as f32);
+        let speed_line_angle = logic_spaceship.solid.vel.angle();
+        self.speed_point = Point::new(
+            xc + (speed_line_length as f32 *speed_line_angle.cos()) as i32 ,
+            yc + (speed_line_length as f32 *speed_line_angle.sin())  as i32
         )
     }
 
@@ -39,8 +48,12 @@ impl Spaceship {
 
         self.sprite.draw(canvas);
         let start =self.sprite.rect.center();
+
         canvas.set_draw_color(Color::RED);
-        canvas.draw_line(start,self.end_point);
+        canvas.draw_line(start,self.orientation_point);
+
+        canvas.set_draw_color(Color::BLUE);
+        canvas.draw_line(start,self.speed_point);
     }
 }
 
