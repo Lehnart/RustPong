@@ -6,20 +6,20 @@ use engine::physics::{CircleSolid, Position, Velocity};
 pub const SPACESHIP_RADIUS: f32 = 0.04;
 pub const SPACESHIP_STARTING_POSITION_X0: f32 = 0.5;
 pub const SPACESHIP_STARTING_POSITION_Y0: f32 = 0.5;
-pub const SPACESHIP_ACCELERATION : f32 = 0.2;
-pub const SPACESHIP_ROTATION_SPEED : f32 = 5.;
+pub const SPACESHIP_ACCELERATION: f32 = 0.2;
+pub const SPACESHIP_ROTATION_SPEED: f32 = 5.;
 
-pub enum Turning{
+pub enum Turning {
     NONE,
     LEFT,
-    RIGHT
+    RIGHT,
 }
 
 pub struct Spaceship {
     pub solid: CircleSolid,
     pub orientation: f32,
-    accelerating : bool,
-    turning : Turning
+    accelerating: bool,
+    turning: Turning,
 }
 
 impl Spaceship {
@@ -32,7 +32,7 @@ impl Spaceship {
             solid: CircleSolid::new(position, velocity, SPACESHIP_RADIUS, limit),
             orientation: 0.,
             accelerating: false,
-            turning : Turning::NONE
+            turning: Turning::NONE,
         }
     }
 
@@ -44,30 +44,57 @@ impl Spaceship {
         self.accelerating = false;
     }
 
-    pub fn turn(&mut self, turn:Turning){
+    pub fn turn(&mut self, turn: Turning) {
         self.turning = turn;
     }
 
     pub fn update(&mut self, dt: f32) {
+        self.update_orientation(dt);
+        self.update_speed(dt);
+        self.update_position(dt);
+    }
 
-        match &self.turning{
-            Turning::LEFT => self.orientation -= SPACESHIP_ROTATION_SPEED*dt,
-            Turning::RIGHT => self.orientation += SPACESHIP_ROTATION_SPEED*dt,
+    fn update_orientation(&mut self, dt: f32) {
+        match &self.turning {
+            Turning::LEFT => self.orientation -= SPACESHIP_ROTATION_SPEED * dt,
+            Turning::RIGHT => self.orientation += SPACESHIP_ROTATION_SPEED * dt,
             Turning::NONE => (),
         }
+    }
 
+    fn update_speed(&mut self, dt: f32) {
         if self.accelerating {
             let mut vx = self.solid.vel.vx();
             let mut vy = self.solid.vel.vy();
 
-            vx += SPACESHIP_ACCELERATION*dt*self.orientation.cos();
-            vy += SPACESHIP_ACCELERATION*dt*self.orientation.sin();
+            vx += SPACESHIP_ACCELERATION * dt * self.orientation.cos();
+            vy += SPACESHIP_ACCELERATION * dt * self.orientation.sin();
 
             self.solid.vel.set_vx(vx);
             self.solid.vel.set_vy(vy);
         }
+    }
 
+    fn update_position(&mut self, dt: f32) {
+        self.handle_out_of_limit();
         self.solid.update(dt);
+    }
+
+    fn handle_out_of_limit(&mut self) {
+        let pos_x = self.solid.pos.x();
+        let pos_y = self.solid.pos.y();
+        if pos_x < 0. {
+            self.solid.pos.set_x(1. - pos_x);
+        }
+        if pos_x > 1. {
+            self.solid.pos.set_x(pos_x - 1.);
+        }
+        if pos_y < 0. {
+            self.solid.pos.set_y(1. - pos_y);
+        }
+        if pos_y > 1. {
+            self.solid.pos.set_y(pos_y - 1.);
+        }
     }
 }
 
