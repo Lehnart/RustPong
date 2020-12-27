@@ -8,6 +8,7 @@ pub const SPACESHIP_STARTING_POSITION_X0: f32 = 0.5;
 pub const SPACESHIP_STARTING_POSITION_Y0: f32 = 0.5;
 pub const SPACESHIP_ACCELERATION: f32 = 0.2;
 pub const SPACESHIP_ROTATION_SPEED: f32 = 5.;
+pub const SPACESHIP_MAX_SPEED: f32 = 1.;
 
 pub enum Turning {
     NONE,
@@ -69,6 +70,19 @@ impl Spaceship {
 
             vx += SPACESHIP_ACCELERATION * dt * self.orientation.cos();
             vy += SPACESHIP_ACCELERATION * dt * self.orientation.sin();
+
+            if vx > SPACESHIP_MAX_SPEED {
+                vx = SPACESHIP_MAX_SPEED
+            }
+            if vx < -SPACESHIP_MAX_SPEED {
+                vx = -SPACESHIP_MAX_SPEED
+            }
+            if vy > SPACESHIP_MAX_SPEED {
+                vy = SPACESHIP_MAX_SPEED
+            }
+            if vy < - SPACESHIP_MAX_SPEED {
+                vy = -SPACESHIP_MAX_SPEED
+            }
 
             self.solid.vel.set_vx(vx);
             self.solid.vel.set_vy(vy);
