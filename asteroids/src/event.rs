@@ -30,10 +30,10 @@ pub fn handle_event(event: Event, logic: &mut Logic, audio: &Audio) {
         Event::KeyUp { keycode: Some(Keycode::Right), repeat: false, .. } => {
             logic.spaceship.turn(Turning::NONE);
         }
-        Event::KeyDown { keycode: Some(Keycode::Space), repeat: false, .. } => {
+        Event::KeyDown { keycode: Some(Keycode::F), repeat: false, .. } => {
             logic.spaceship.firing = true;
         }
-        Event::KeyUp { keycode: Some(Keycode::Space), repeat: false, .. } => {
+        Event::KeyUp { keycode: Some(Keycode::F), repeat: false, .. } => {
             logic.spaceship.firing = false;
         }
         _ => {}
