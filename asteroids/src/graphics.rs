@@ -11,49 +11,76 @@ use crate::logic::Logic;
 use crate::logic;
 
 pub const SPACESHIP_SPRITE_PATH : &str = "res/spaceship.bmp";
+pub const SPACESHIP_ACCELERATING_SPRITE_PATH : &str = "res/accelerating_spaceship.bmp";
+
+pub struct Bullet{
+    sprite: RectSprite
+}
+
+impl Bullet{
+    pub fn new() -> Bullet{
+        Bullet{
+            sprite : RectSprite::default(Color::WHITE)
+        }
+    }
+}
 
 pub struct Spaceship<'a> {
     sprite: Sprite<'a>,
-    orientation_point: Point,
+    accelerating_sprite :  Sprite<'a>,
     speed_point: Point,
+    accelerating : bool,
+    bullets : Vec<Bullet>
 }
+
+
 
 impl Spaceship<'_> {
     pub fn new() -> Spaceship<'static> {
         Spaceship {
             sprite: Sprite::from_bmp(SPACESHIP_SPRITE_PATH),
-            orientation_point: Point::new(0, 0),
+            accelerating_sprite: Sprite::from_bmp(SPACESHIP_ACCELERATING_SPRITE_PATH),
             speed_point: Point::new(0, 0),
+            accelerating: false,
+            bullets : Vec::new()
         }
     }
 
     pub fn update(&mut self, logic_spaceship: &logic::Spaceship, w: u32, h: u32) {
 
         self.sprite.update(logic_spaceship.as_rect(), logic_spaceship.orientation.to_degrees() as f64, w, h);
+        self.accelerating_sprite.update(logic_spaceship.as_rect(), logic_spaceship.orientation.to_degrees() as f64, w, h);
+        self.accelerating = logic_spaceship.accelerating;
 
         let xc = self.sprite.dest_rect.center().x();
         let yc = self.sprite.dest_rect.center().y();
-        self.orientation_point = Point::new(
-            xc + (self.sprite.dest_rect.width() as f32 *logic_spaceship.orientation.cos()) as i32 ,
-            yc + (self.sprite.dest_rect.width() as f32 *logic_spaceship.orientation.sin())  as i32
-        );
-
         let speed_line_length = logic_spaceship.solid.vel.mag()*(w as f32);
         let speed_line_angle = logic_spaceship.solid.vel.angle();
         self.speed_point = Point::new(
             xc + (speed_line_length as f32 *speed_line_angle.cos()) as i32 ,
             yc + (speed_line_length as f32 *speed_line_angle.sin())  as i32
-        )
+        );
+
+        self.bullets.clear();
+        for logic_bullet in logic_spaceship.bullets(){
+            let mut bullet = Bullet::new();
+            bullet.sprite.update(logic_bullet.as_rect(),w,h);
+            self.bullets.push(bullet);
+        }
     }
 
     pub fn draw(&self, canvas: &mut WindowCanvas) {
 
-        self.sprite.draw(canvas);
+        match self.accelerating{
+            true => self.accelerating_sprite.draw(canvas),
+            false => self.sprite.draw(canvas)
+        }
+
+        for bullet in &self.bullets{
+            bullet.sprite.draw(canvas);
+        }
+
         let start =self.sprite.dest_rect.center();
-
-        canvas.set_draw_color(Color::RED);
-        canvas.draw_line(start,self.orientation_point);
-
         canvas.set_draw_color(Color::BLUE);
         canvas.draw_line(start,self.speed_point);
     }

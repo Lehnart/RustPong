@@ -1,7 +1,7 @@
 use sdl2::surface::Surface;
 
-use engine::geometry::{AsRect, Rect};
-use engine::physics::{CircleSolid, Position, Velocity};
+use engine::geometry::{AsRect, Rect, Circle};
+use engine::physics::{CircleSolid, Position, Velocity, RectSolid};
 
 pub const SPACESHIP_RADIUS: f32 = 0.04;
 pub const SPACESHIP_STARTING_POSITION_X0: f32 = 0.5;
@@ -9,18 +9,69 @@ pub const SPACESHIP_STARTING_POSITION_Y0: f32 = 0.5;
 pub const SPACESHIP_ACCELERATION: f32 = 0.2;
 pub const SPACESHIP_ROTATION_SPEED: f32 = 5.;
 pub const SPACESHIP_MAX_SPEED: f32 = 1.;
+pub const SPACESHIP_FIRING_DELAY: f32 = 0.3;
 
+pub const BULLET_SPEED : f32 = 0.5;
+pub const BULLET_RADIUS : f32 = 0.005;
+
+#[derive(Debug)]
 pub enum Turning {
     NONE,
     LEFT,
     RIGHT,
 }
 
+pub struct Bullet{
+    pub solid: CircleSolid
+}
+
+impl Bullet{
+    pub fn new(x : f32, y: f32, orientation : f32) -> Bullet{
+        let position = Position::new(x, y);
+        let velocity = Velocity::new(BULLET_SPEED*orientation.cos(), BULLET_SPEED*orientation.sin());
+        let limit = Rect::new(-1., -1., 3., 3.);
+        let circle_solid = CircleSolid::new(position, velocity, BULLET_RADIUS, limit);
+        Bullet{
+            solid : circle_solid
+        }
+    }
+
+    pub fn is_out_of_limit(&self) -> bool {
+        let x = self.solid.pos.x();
+        let y = self.solid.pos.y();
+        if x < 0. || x > 1.{
+            return false;
+        }
+        if y < 0. || y > 1.{
+            return false;
+        }
+
+        return true;
+    }
+
+    pub fn update(&mut self, dt : f32){
+        self.solid.update(dt);
+    }
+
+}
+
+impl AsRect for Bullet {
+    fn as_rect(&self) -> Rect {
+        let x = self.solid.pos.x();
+        let y = self.solid.pos.y();
+        let r = self.solid.r;
+        Rect::new(x - r, y - r, r, r)
+    }
+}
+
 pub struct Spaceship {
     pub solid: CircleSolid,
     pub orientation: f32,
-    accelerating: bool,
+    pub accelerating: bool,
+    pub firing: bool,
+    firing_delay: f32,
     turning: Turning,
+    bullets : Vec<Bullet>,
 }
 
 impl Spaceship {
@@ -33,7 +84,10 @@ impl Spaceship {
             solid: CircleSolid::new(position, velocity, SPACESHIP_RADIUS, limit),
             orientation: 0.,
             accelerating: false,
+            firing: false,
+            firing_delay: SPACESHIP_FIRING_DELAY,
             turning: Turning::NONE,
+            bullets : Vec::new()
         }
     }
 
@@ -53,6 +107,12 @@ impl Spaceship {
         self.update_orientation(dt);
         self.update_speed(dt);
         self.update_position(dt);
+        self.update_firing(dt);
+        self.update_bullets(dt);
+    }
+
+    pub fn bullets(&self) -> &Vec<Bullet>{
+        &self.bullets
     }
 
     fn update_orientation(&mut self, dt: f32) {
@@ -92,6 +152,21 @@ impl Spaceship {
     fn update_position(&mut self, dt: f32) {
         self.handle_out_of_limit();
         self.solid.update(dt);
+    }
+
+    fn update_firing(&mut self, dt :f32){
+        if self.firing && self.firing_delay > SPACESHIP_FIRING_DELAY {
+            self.firing_delay = 0.;
+            let rect = self.as_rect();
+            let bullet = Bullet::new(rect.xc(), rect.yc(),self.orientation);
+            self.bullets.push(bullet);
+        }
+        self.firing_delay += dt;
+    }
+
+    fn update_bullets(&mut self, dt :f32){
+        self.bullets.retain(|bullet| { return bullet.is_out_of_limit(); });
+        for mut bullet in &mut self.bullets { bullet.update(dt); }
     }
 
     fn handle_out_of_limit(&mut self) {
