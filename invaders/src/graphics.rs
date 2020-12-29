@@ -7,15 +7,15 @@ use engine::geometry;
 use engine::geometry::AsRect;
 use engine::graphics::{RectSprite, RenderedString, Sprite, Window};
 
-use crate::logic::{Logic, SPACESHIP_WIDTH, SPACESHIP_HEIGHT};
+use crate::logic::{Logic, SPACESHIP_HEIGHT, SPACESHIP_WIDTH};
 use crate::logic;
 
 pub const SPACESHIP_SPRITE_PATH: &str = "res/sprite/spaceship.bmp";
-pub const MISSILE_COLOR : Color = Color::GREEN;
+pub const MISSILE_COLOR: Color = Color::GREEN;
 
 pub struct Spaceship<'a> {
     spaceship: Sprite<'a>,
-    missile : RectSprite,
+    missile: RectSprite,
 }
 
 impl Spaceship<'_> {
@@ -23,12 +23,12 @@ impl Spaceship<'_> {
         let sprite_rect = Rect::new(0, 0, (SPACESHIP_WIDTH * cw as f32) as u32, (SPACESHIP_HEIGHT * ch as f32) as u32);
         let sprite = Sprite::simple_new(SPACESHIP_SPRITE_PATH, sprite_rect);
         Spaceship {
-            spaceship : sprite,
-            missile : RectSprite::default(MISSILE_COLOR),
+            spaceship: sprite,
+            missile: RectSprite::default(MISSILE_COLOR),
         }
     }
 
-    pub fn update(&mut self, logic_spaceship: &logic::Spaceship,cw:u32,ch:u32) {
+    pub fn update(&mut self, logic_spaceship: &logic::Spaceship, cw: u32, ch: u32) {
         self.spaceship.update(logic_spaceship.as_rect(), 0., cw, ch);
         if logic_spaceship.missile.is_destroyed() {
             self.missile.hide();
@@ -46,14 +46,14 @@ impl Spaceship<'_> {
 
 
 pub struct Graphics<'a> {
-    spaceship : Spaceship<'a>,
+    spaceship: Spaceship<'a>,
 }
 
 impl Graphics<'_> {
     /// Init the dynamic elements required to draw the game
     pub fn new(cw: u32, ch: u32, ttf_context: &Sdl2TtfContext) -> Graphics {
         Graphics {
-            spaceship : Spaceship::new(cw,ch),
+            spaceship: Spaceship::new(cw, ch),
         }
     }
 
@@ -61,7 +61,7 @@ impl Graphics<'_> {
     pub fn update(&mut self, logic: &Logic, window: &Window, ttf_context: &Sdl2TtfContext) {
         let w = window.width();
         let h = window.height();
-        self.spaceship.update(&logic.spaceship,w,h)
+        self.spaceship.update(&logic.spaceship, w, h)
     }
 
     /// Draw the game.

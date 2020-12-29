@@ -1,8 +1,8 @@
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 
-use crate::logic::Logic;
 use crate::audio::Audio;
+use crate::logic::Logic;
 
 /// Call the logic command accordingly to the input
 pub fn handle_event(event: Event, logic: &mut Logic, audio: &Audio) {
@@ -18,12 +18,12 @@ pub fn handle_event(event: Event, logic: &mut Logic, audio: &Audio) {
             logic.left_tank.decelerate();
         }
         Event::KeyDown { keycode: Some(Keycode::Down), repeat: false, .. } => {
-            if logic.left_tank.fire(){
+            if logic.left_tank.fire() {
                 audio.play_left_shoot();
             }
         }
         Event::KeyDown { keycode: Some(Keycode::S), repeat: false, .. } => {
-            if logic.right_tank.fire(){
+            if logic.right_tank.fire() {
                 audio.play_right_shoot();
             }
         }

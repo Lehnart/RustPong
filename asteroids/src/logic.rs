@@ -1,7 +1,8 @@
 use sdl2::surface::Surface;
 
-use engine::geometry::{AsRect, Rect, Circle};
-use engine::physics::{CircleSolid, Position, Velocity, RectSolid};
+use engine::geometry::{AsRect, Circle, Rect};
+use engine::physics::{CircleSolid, Position, RectSolid, Velocity};
+use engine::random::rand;
 
 pub const SPACESHIP_RADIUS: f32 = 0.04;
 pub const SPACESHIP_STARTING_POSITION_X0: f32 = 0.5;
@@ -11,8 +12,12 @@ pub const SPACESHIP_ROTATION_SPEED: f32 = 5.;
 pub const SPACESHIP_MAX_SPEED: f32 = 1.;
 pub const SPACESHIP_FIRING_DELAY: f32 = 0.3;
 
-pub const BULLET_SPEED : f32 = 0.5;
-pub const BULLET_RADIUS : f32 = 0.005;
+pub const BULLET_SPEED: f32 = 0.5;
+pub const BULLET_RADIUS: f32 = 0.005;
+
+pub const ASTEROID_STARTING_NUMBER: u32 = 4;
+pub const ASTEROID_RADII: [f32; 3] = [0.05, 0.025, 0.0125];
+pub const ASTEROID_SPEEDS: [f32; 3] = [0.1, 0.2, 0.4];
 
 #[derive(Debug)]
 pub enum Turning {
@@ -21,38 +26,118 @@ pub enum Turning {
     RIGHT,
 }
 
-pub struct Bullet{
+pub struct Asteroid {
+    solid: CircleSolid,
+    size_index: usize,
+}
+
+impl Asteroid {
+    pub fn random() -> Asteroid {
+        let x = rand(0, 100) as f32 / 100.;
+        let y = rand(0, 100) as f32 / 100.;
+        let orientation = rand(0, 628) as f32 / 100.;
+        let size_index: usize = 0;
+        let speed = ASTEROID_SPEEDS[size_index];
+        let r = ASTEROID_RADII[size_index];
+
+        let position = Position::new(x, y);
+        let velocity = Velocity::new(speed * orientation.cos(), speed * orientation.sin());
+        let limit = Rect::new(-1., -1., 3., 3.);
+        let circle_solid = CircleSolid::new(position, velocity, r, limit);
+        Asteroid {
+            solid: circle_solid,
+            size_index,
+        }
+    }
+
+    pub fn update(&mut self, dt: f32) {
+        self.solid.update(dt);
+        self.handle_out_of_limit();
+    }
+
+    fn handle_out_of_limit(&mut self) {
+        let pos_x = self.solid.pos.x();
+        let pos_y = self.solid.pos.y();
+        if pos_x < 0. {
+            self.solid.pos.set_x(1. - pos_x);
+        }
+        if pos_x > 1. {
+            self.solid.pos.set_x(pos_x - 1.);
+        }
+        if pos_y < 0. {
+            self.solid.pos.set_y(1. - pos_y);
+        }
+        if pos_y > 1. {
+            self.solid.pos.set_y(pos_y - 1.);
+        }
+    }
+}
+
+pub struct Asteroids {
+    asteroids: Vec<Asteroid>
+}
+
+impl Asteroids {
+    pub fn new(asteroid_count: u32) -> Asteroids {
+        let mut asteroids = Vec::new();
+        for _ in 0..asteroid_count {
+            let asteroid = Asteroid::random();
+            asteroids.push(asteroid);
+        };
+
+        Asteroids {
+            asteroids
+        }
+    }
+
+    pub fn update(&mut self, dt: f32) {
+        for asteroid in &mut self.asteroids {
+            asteroid.update(dt);
+        }
+    }
+}
+
+impl AsRect for Asteroid {
+    fn as_rect(&self) -> Rect {
+        let x = self.solid.pos.x();
+        let y = self.solid.pos.y();
+        let r = self.solid.r;
+        Rect::new(x - r, y - r, 2. * r, 2. * r)
+    }
+}
+
+
+pub struct Bullet {
     pub solid: CircleSolid
 }
 
-impl Bullet{
-    pub fn new(x : f32, y: f32, orientation : f32) -> Bullet{
+impl Bullet {
+    pub fn new(x: f32, y: f32, orientation: f32) -> Bullet {
         let position = Position::new(x, y);
-        let velocity = Velocity::new(BULLET_SPEED*orientation.cos(), BULLET_SPEED*orientation.sin());
+        let velocity = Velocity::new(BULLET_SPEED * orientation.cos(), BULLET_SPEED * orientation.sin());
         let limit = Rect::new(-1., -1., 3., 3.);
         let circle_solid = CircleSolid::new(position, velocity, BULLET_RADIUS, limit);
-        Bullet{
-            solid : circle_solid
+        Bullet {
+            solid: circle_solid
         }
     }
 
     pub fn is_out_of_limit(&self) -> bool {
         let x = self.solid.pos.x();
         let y = self.solid.pos.y();
-        if x < 0. || x > 1.{
+        if x < 0. || x > 1. {
             return false;
         }
-        if y < 0. || y > 1.{
+        if y < 0. || y > 1. {
             return false;
         }
 
         return true;
     }
 
-    pub fn update(&mut self, dt : f32){
+    pub fn update(&mut self, dt: f32) {
         self.solid.update(dt);
     }
-
 }
 
 impl AsRect for Bullet {
@@ -71,7 +156,7 @@ pub struct Spaceship {
     pub firing: bool,
     firing_delay: f32,
     turning: Turning,
-    bullets : Vec<Bullet>,
+    bullets: Vec<Bullet>,
 }
 
 impl Spaceship {
@@ -87,7 +172,7 @@ impl Spaceship {
             firing: false,
             firing_delay: SPACESHIP_FIRING_DELAY,
             turning: Turning::NONE,
-            bullets : Vec::new()
+            bullets: Vec::new(),
         }
     }
 
@@ -111,7 +196,7 @@ impl Spaceship {
         self.update_bullets(dt);
     }
 
-    pub fn bullets(&self) -> &Vec<Bullet>{
+    pub fn bullets(&self) -> &Vec<Bullet> {
         &self.bullets
     }
 
@@ -140,7 +225,7 @@ impl Spaceship {
             if vy > SPACESHIP_MAX_SPEED {
                 vy = SPACESHIP_MAX_SPEED
             }
-            if vy < - SPACESHIP_MAX_SPEED {
+            if vy < -SPACESHIP_MAX_SPEED {
                 vy = -SPACESHIP_MAX_SPEED
             }
 
@@ -154,17 +239,17 @@ impl Spaceship {
         self.solid.update(dt);
     }
 
-    fn update_firing(&mut self, dt :f32){
+    fn update_firing(&mut self, dt: f32) {
         if self.firing && self.firing_delay > SPACESHIP_FIRING_DELAY {
             self.firing_delay = 0.;
             let rect = self.as_rect();
-            let bullet = Bullet::new(rect.xc(), rect.yc(),self.orientation);
+            let bullet = Bullet::new(rect.xc(), rect.yc(), self.orientation);
             self.bullets.push(bullet);
         }
         self.firing_delay += dt;
     }
 
-    fn update_bullets(&mut self, dt :f32){
+    fn update_bullets(&mut self, dt: f32) {
         self.bullets.retain(|bullet| { return bullet.is_out_of_limit(); });
         for mut bullet in &mut self.bullets { bullet.update(dt); }
     }
@@ -200,6 +285,7 @@ impl AsRect for Spaceship {
 pub struct Logic {
     is_over: bool,
     pub spaceship: Spaceship,
+    asteroids: Asteroids,
 }
 
 impl Logic {
@@ -208,12 +294,14 @@ impl Logic {
         Logic {
             is_over: false,
             spaceship: Spaceship::new(),
+            asteroids: Asteroids::new(ASTEROID_STARTING_NUMBER),
         }
     }
 
     /// Update each entity of a delta of time and check if the game is over.
     pub fn update(&mut self, dt: f32) {
         self.spaceship.update(dt);
+        self.asteroids.update(dt);
     }
 
     /// Set the game over
@@ -224,5 +312,9 @@ impl Logic {
     /// Is the game over?
     pub fn is_over(&self) -> bool {
         self.is_over
+    }
+
+    pub fn asteroids(&self) -> &Vec<Asteroid> {
+        &self.asteroids.asteroids
     }
 }

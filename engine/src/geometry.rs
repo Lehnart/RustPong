@@ -104,7 +104,7 @@ impl Circle {
         self.r
     }
 
-    pub fn set_radius(&mut self, r:f32){
+    pub fn set_radius(&mut self, r: f32) {
         self.r = r;
     }
 }

@@ -2,7 +2,7 @@ use sdl2::pixels::Color;
 use sdl2::ttf::Sdl2TtfContext;
 
 use engine::geometry::{AsRect, Rect};
-use engine::graphics::{RenderedString, RectSprite, Window};
+use engine::graphics::{RectSprite, RenderedString, Window};
 
 use crate::logic::{BLOCK_COL_N, BLOCK_ROW_N, BOARD_LEFT_LIMIT_X, BOARD_RIGHT_LIMIT_X, BOARD_TOP_LIMIT_Y, Logic};
 

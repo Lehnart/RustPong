@@ -26,8 +26,7 @@ fn collide_shell_and_map(shell: &mut Shell, map: &Map) {
 }
 
 fn collide_shell_and_limits(shell: &mut Shell) {
-
-    if shell.is_destroyed(){
+    if shell.is_destroyed() {
         return;
     }
     let shell_rect = shell.as_rect();
@@ -91,7 +90,6 @@ fn collide_shell_and_tank(shell: &mut Shell, tank: &mut Tank) -> bool {
 }
 
 pub fn check_collision(logic: &mut Logic, dt: f32, audio: &Audio) {
-
     collide_shell_and_limits(&mut logic.left_tank.shell);
     collide_shell_and_limits(&mut logic.right_tank.shell);
     collide_shell_and_map(&mut logic.left_tank.shell, &logic.map);
@@ -108,5 +106,4 @@ pub fn check_collision(logic: &mut Logic, dt: f32, audio: &Audio) {
         logic.score.point_right();
         audio.play_left_explosion();
     }
-
 }

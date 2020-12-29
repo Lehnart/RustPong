@@ -1,11 +1,13 @@
-use crate::logic::Logic;
-use engine::graphics::Window;
-use crate::graphics::Graphics;
 use std::time::SystemTime;
-use crate::event::handle_event;
-use crate::input::handle_input;
-use crate::collide::check_collision;
+
+use engine::graphics::Window;
+
 use crate::audio::Audio;
+use crate::collide::check_collision;
+use crate::event::handle_event;
+use crate::graphics::Graphics;
+use crate::input::handle_input;
+use crate::logic::Logic;
 
 mod logic;
 mod graphics;
@@ -14,16 +16,15 @@ mod input;
 mod collide;
 mod audio;
 
-pub const WINDOW_WIDTH : u32 = 600;
-pub const WINDOW_HEIGHT : u32 = 700;
+pub const WINDOW_WIDTH: u32 = 600;
+pub const WINDOW_HEIGHT: u32 = 700;
 
 fn main() {
-
     let ttf_context = sdl2::ttf::init().unwrap();
     let mut audio = Audio::new();
     let mut logic = Logic::new();
     let mut window = Window::new(WINDOW_WIDTH, WINDOW_HEIGHT);
-    let mut graphics = Graphics::new(WINDOW_WIDTH,WINDOW_HEIGHT, &ttf_context);
+    let mut graphics = Graphics::new(WINDOW_WIDTH, WINDOW_HEIGHT, &ttf_context);
 
     let mut previous = SystemTime::now();
     'game_loop: loop {

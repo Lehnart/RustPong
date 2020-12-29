@@ -4,7 +4,7 @@ use sdl2::render::WindowCanvas;
 use sdl2::ttf::Sdl2TtfContext;
 
 use engine::geometry::AsRect;
-use engine::graphics::{RenderedString, RectSprite, Window};
+use engine::graphics::{RectSprite, RenderedString, Window};
 
 use crate::logic::Logic;
 

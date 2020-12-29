@@ -1,22 +1,19 @@
-use sdl2::mixer::{Chunk, Channel};
+use sdl2::mixer::{Channel, Chunk};
+
 use engine::audio::init_audio;
+
 use crate::logic::Logic;
 
-pub const CHANNEL_COUNT : i32 = 6;
+pub const CHANNEL_COUNT: i32 = 6;
 
-pub struct Audio {
-
-}
+pub struct Audio {}
 
 impl Audio {
     pub fn new() -> Audio {
         init_audio(CHANNEL_COUNT);
 
-        Audio {
-        }
+        Audio {}
     }
 
-    pub fn update(&mut self, logic : &Logic){
-    }
-
+    pub fn update(&mut self, logic: &Logic) {}
 }

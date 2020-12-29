@@ -188,7 +188,6 @@ pub struct Tank {
 }
 
 impl Tank {
-
     /// Create a tank at a given position and a given orientation
     pub fn new(x0: f32, y0: f32, orientation: f32) -> Tank {
         let pos = Position::new(x0, y0);

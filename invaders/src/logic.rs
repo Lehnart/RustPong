@@ -101,7 +101,6 @@ impl Spaceship {
     }
 
     pub fn update(&mut self, dt: f32) {
-
         self.solid.update(dt);
         self.missile.update(dt);
     }
