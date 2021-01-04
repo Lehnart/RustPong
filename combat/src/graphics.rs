@@ -256,7 +256,7 @@ pub struct Graphics<'a> {
 
 impl Graphics<'_> {
     /// Init the dynamic elements required to draw the game
-    pub fn new<'a>(canvas_width: u32, canvas_height: u32, ttf_context: &'a Sdl2TtfContext) -> Graphics<'a> {
+    pub fn new(canvas_width: u32, canvas_height: u32, ttf_context: &Sdl2TtfContext) -> Graphics {
         let y_shift = (canvas_height - canvas_width) as i32;
 
         let left_tank = Tank::new(y_shift, LEFT_TANK_COLOR, canvas_width);

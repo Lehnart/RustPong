@@ -1,7 +1,5 @@
-use sdl2::surface::Surface;
-
-use engine::geometry::{AsRect, Circle, Rect};
-use engine::physics::{CircleSolid, Position, RectSolid, Velocity};
+use engine::geometry::{AsRect, Rect};
+use engine::physics::{CircleSolid, Position, Velocity};
 use engine::random::rand;
 
 pub const SPACESHIP_RADIUS: f32 = 0.04;
@@ -251,7 +249,7 @@ impl Spaceship {
 
     fn update_bullets(&mut self, dt: f32) {
         self.bullets.retain(|bullet| { return bullet.is_out_of_limit(); });
-        for mut bullet in &mut self.bullets { bullet.update(dt); }
+        for bullet in &mut self.bullets { bullet.update(dt); }
     }
 
     fn handle_out_of_limit(&mut self) {

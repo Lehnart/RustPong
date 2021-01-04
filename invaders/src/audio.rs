@@ -15,5 +15,5 @@ impl Audio {
         Audio {}
     }
 
-    pub fn update(&mut self, logic: &Logic) {}
+    pub fn update(&mut self, _logic: &Logic) {}
 }

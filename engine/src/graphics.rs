@@ -60,8 +60,6 @@ pub struct Sprite<'a> {
 impl Sprite<'_> {
     pub fn from_bmp(surf_path: &str) -> Sprite {
         let surface = Surface::load_bmp(surf_path).unwrap();
-        let w = surface.width();
-        let h = surface.height();
         let rect = surface.rect().clone();
 
         Sprite {

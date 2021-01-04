@@ -1,5 +1,3 @@
-use sdl2::mixer::{Channel, Chunk};
-
 use engine::audio::init_audio;
 
 use crate::logic::Logic;
@@ -15,5 +13,5 @@ impl Audio {
         Audio {}
     }
 
-    pub fn update(&mut self, logic: &Logic) {}
+    pub fn update(&mut self, _logic: &Logic) {}
 }

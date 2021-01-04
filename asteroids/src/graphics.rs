@@ -1,11 +1,10 @@
 use sdl2::pixels::Color;
-use sdl2::rect::{Point, Rect};
+use sdl2::rect::{Point};
 use sdl2::render::WindowCanvas;
 use sdl2::ttf::Sdl2TtfContext;
 
-use engine::geometry;
 use engine::geometry::AsRect;
-use engine::graphics::{RectSprite, RenderedString, Sprite, Window};
+use engine::graphics::{RectSprite, Sprite, Window};
 
 use crate::logic;
 use crate::logic::Logic;
@@ -91,7 +90,7 @@ impl Spaceship<'_> {
 
         let start = self.sprite.dest_rect.center();
         canvas.set_draw_color(Color::BLUE);
-        canvas.draw_line(start, self.speed_point);
+        canvas.draw_line(start, self.speed_point).unwrap();
     }
 }
 
@@ -102,7 +101,7 @@ pub struct Graphics<'a> {
 
 impl Graphics<'_> {
     /// Init the dynamic elements required to draw the game
-    pub fn new(canvas_width: u32, canvas_height: u32, ttf_context: &Sdl2TtfContext) -> Graphics {
+    pub fn new(_canvas_width: u32, _canvas_height: u32, _ttf_context: &Sdl2TtfContext) -> Graphics {
         Graphics {
             spaceship: Spaceship::new(),
             asteroids: Vec::new(),
@@ -110,7 +109,7 @@ impl Graphics<'_> {
     }
 
     /// Update the dynamic elements accordingly to the state of the game.
-    pub fn update(&mut self, logic: &Logic, window: &Window, ttf_context: &Sdl2TtfContext) {
+    pub fn update(&mut self, logic: &Logic, window: &Window, _ttf_context: &Sdl2TtfContext) {
         let w = window.width();
         let h = window.height();
         self.spaceship.update(&logic.spaceship, w, h);

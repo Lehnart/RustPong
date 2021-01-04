@@ -1,5 +1,3 @@
-use std::time::{SystemTime, UNIX_EPOCH};
-
 use rand::prelude::*;
 
 /// Generate a random unsigned int between 0 and max.

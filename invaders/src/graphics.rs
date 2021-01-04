@@ -51,14 +51,14 @@ pub struct Graphics<'a> {
 
 impl Graphics<'_> {
     /// Init the dynamic elements required to draw the game
-    pub fn new(cw: u32, ch: u32, ttf_context: &Sdl2TtfContext) -> Graphics {
+    pub fn new(cw: u32, ch: u32, _ttf_context: &Sdl2TtfContext) -> Graphics {
         Graphics {
             spaceship: Spaceship::new(cw, ch),
         }
     }
 
     /// Update the dynamic elements accordingly to the state of the game.
-    pub fn update(&mut self, logic: &Logic, window: &Window, ttf_context: &Sdl2TtfContext) {
+    pub fn update(&mut self, logic: &Logic, window: &Window, _ttf_context: &Sdl2TtfContext) {
         let w = window.width();
         let h = window.height();
         self.spaceship.update(&logic.spaceship, w, h)

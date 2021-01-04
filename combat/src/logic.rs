@@ -344,7 +344,7 @@ impl Logic {
         }
     }
 
-    /// Change current map, reseting the score and the tank positions.
+    /// Change current map, reset the score and the tank positions.
     pub fn change_map(&mut self) {
         self.score = Score::new();
         self.left_tank = Tank::new(LEFT_TANK_X0, LEFT_TANK_Y0, 0.);

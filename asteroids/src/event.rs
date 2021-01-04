@@ -6,7 +6,7 @@ use crate::logic::Logic;
 use crate::logic::Turning;
 
 /// Call the logic command accordingly to the input
-pub fn handle_event(event: Event, logic: &mut Logic, audio: &Audio) {
+pub fn handle_event(event: Event, logic: &mut Logic, _audio: &Audio) {
     match event {
         Event::Quit { .. } | Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
             logic.over();

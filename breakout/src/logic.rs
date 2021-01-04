@@ -252,7 +252,7 @@ impl Score {
 
 /// The current number of life.
 ///
-/// When it reachs 0, the game is over.
+/// When it reach 0, the game is over.
 pub struct Life {
     count: u32,
 }
