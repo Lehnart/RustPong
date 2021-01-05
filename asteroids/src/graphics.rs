@@ -11,6 +11,7 @@ use crate::logic::Logic;
 
 pub const SPACESHIP_SPRITE_PATH: &str = "res/spaceship.bmp";
 pub const SPACESHIP_ACCELERATING_SPRITE_PATH: &str = "res/accelerating_spaceship.bmp";
+pub const ASTEROID_SPRITE_PATH: &str = "res/asteroid.bmp";
 
 pub struct Bullet {
     sprite: RectSprite
@@ -24,14 +25,14 @@ impl Bullet {
     }
 }
 
-pub struct Asteroid {
-    sprite: RectSprite
+pub struct Asteroid<'a> {
+    sprite: Sprite<'a>
 }
 
-impl Asteroid {
-    pub fn new() -> Asteroid {
+impl  Asteroid<'_> {
+    pub  fn new<'a> ()-> Asteroid<'a> {
         Asteroid {
-            sprite: RectSprite::default(Color::WHITE)
+            sprite: Sprite::from_bmp(ASTEROID_SPRITE_PATH)
         }
     }
 }
@@ -96,7 +97,7 @@ impl Spaceship<'_> {
 
 pub struct Graphics<'a> {
     spaceship: Spaceship<'a>,
-    asteroids: Vec<Asteroid>,
+    asteroids: Vec<Asteroid<'a>>,
 }
 
 impl Graphics<'_> {
@@ -117,7 +118,7 @@ impl Graphics<'_> {
         self.asteroids.clear();
         for logic_asteroid in logic.asteroids() {
             let mut asteroid = Asteroid::new();
-            asteroid.sprite.update(logic_asteroid.as_rect(), w, h);
+            asteroid.sprite.update(logic_asteroid.as_rect(), 0.,w, h);
             self.asteroids.push(asteroid);
         }
     }
