@@ -8,10 +8,12 @@ use engine::graphics::{RectSprite, Sprite, Window};
 
 use crate::logic;
 use crate::logic::Logic;
+use engine::random::rand;
+use engine::geometry;
 
 pub const SPACESHIP_SPRITE_PATH: &str = "res/spaceship.bmp";
 pub const SPACESHIP_ACCELERATING_SPRITE_PATH: &str = "res/accelerating_spaceship.bmp";
-pub const ASTEROID_SPRITE_PATH: &str = "res/asteroid.bmp";
+pub const ASTEROID_SPRITE_PATHS: [&str;4] = ["res/asteroid_0.bmp","res/asteroid_1.bmp","res/asteroid_2.bmp","res/asteroid_3.bmp"];
 
 pub struct Bullet {
     sprite: RectSprite
@@ -26,13 +28,57 @@ impl Bullet {
 }
 
 pub struct Asteroid<'a> {
-    sprite: Sprite<'a>
+    sprite: Sprite<'a>,
+    logic_id : u32
 }
 
 impl  Asteroid<'_> {
-    pub  fn new<'a> ()-> Asteroid<'a> {
+    pub  fn new<'a> (logic_id : u32)-> Asteroid<'a> {
+        let sprite_index = rand(0, ASTEROID_SPRITE_PATHS.len() as i32);
         Asteroid {
-            sprite: Sprite::from_bmp(ASTEROID_SPRITE_PATH)
+            sprite: Sprite::from_bmp(ASTEROID_SPRITE_PATHS[sprite_index as usize]),
+            logic_id
+        }
+    }
+}
+
+pub struct Asteroids<'a>{
+    asteroid_vec : Vec<Asteroid<'a>>
+}
+
+impl Asteroids<'_>{
+    pub  fn new<'a> ()-> Asteroids<'a> {
+         Asteroids {
+            asteroid_vec: Vec::new()
+        }
+    }
+
+    pub fn is_existing(&self, logic_id : u32) -> bool {
+        for asteroid in &self.asteroid_vec{
+            if logic_id == asteroid.logic_id{
+                return true
+            }
+        }
+        return false
+    }
+
+    pub fn create(&mut self, logic_id : u32) {
+        let asteroid = Asteroid::new(logic_id);
+        self.asteroid_vec.push(asteroid);
+    }
+
+    pub fn update(&mut self, logic_id : u32, logic_rect : geometry::Rect, w : u32, h : u32){
+        for asteroid in &mut self.asteroid_vec{
+            if logic_id == asteroid.logic_id{
+                asteroid.sprite.update(logic_rect, 0., w, h);
+                return
+            }
+        }
+    }
+
+    pub fn draw(&self, canvas : &mut WindowCanvas){
+        for asteroid in &self.asteroid_vec {
+            asteroid.sprite.draw(canvas);
         }
     }
 }
@@ -97,7 +143,7 @@ impl Spaceship<'_> {
 
 pub struct Graphics<'a> {
     spaceship: Spaceship<'a>,
-    asteroids: Vec<Asteroid<'a>>,
+    asteroids: Asteroids<'a>,
 }
 
 impl Graphics<'_> {
@@ -105,7 +151,7 @@ impl Graphics<'_> {
     pub fn new(_canvas_width: u32, _canvas_height: u32, _ttf_context: &Sdl2TtfContext) -> Graphics {
         Graphics {
             spaceship: Spaceship::new(),
-            asteroids: Vec::new(),
+            asteroids: Asteroids::new(),
         }
     }
 
@@ -115,12 +161,16 @@ impl Graphics<'_> {
         let h = window.height();
         self.spaceship.update(&logic.spaceship, w, h);
 
-        self.asteroids.clear();
         for logic_asteroid in logic.asteroids() {
-            let mut asteroid = Asteroid::new();
-            asteroid.sprite.update(logic_asteroid.as_rect(), 0.,w, h);
-            self.asteroids.push(asteroid);
+            let id = logic_asteroid.get_id();
+
+            if !self.asteroids.is_existing(id){
+                self.asteroids.create(id);
+            }
+            self.asteroids.update(logic_asteroid.get_id(), logic_asteroid.as_rect(), w, h);
         }
+
+
     }
 
     /// Draw the game.
@@ -132,10 +182,7 @@ impl Graphics<'_> {
 
         let canvas = &mut window.canvas;
         self.spaceship.draw(canvas);
-
-        for asteroid in &self.asteroids {
-            asteroid.sprite.draw(canvas);
-        }
+        self.asteroids.draw(canvas);
 
         canvas.present();
     }

@@ -26,11 +26,12 @@ pub enum Turning {
 
 pub struct Asteroid {
     solid: CircleSolid,
-    size_index: usize,
+    id: u32
 }
 
 impl Asteroid {
-    pub fn random() -> Asteroid {
+
+    pub fn random(id: u32) -> Asteroid {
         let x = rand(0, 100) as f32 / 100.;
         let y = rand(0, 100) as f32 / 100.;
         let orientation = rand(0, 628) as f32 / 100.;
@@ -44,13 +45,17 @@ impl Asteroid {
         let circle_solid = CircleSolid::new(position, velocity, r, limit);
         Asteroid {
             solid: circle_solid,
-            size_index,
+            id
         }
     }
 
     pub fn update(&mut self, dt: f32) {
         self.solid.update(dt);
         self.handle_out_of_limit();
+    }
+
+    pub fn get_id(&self)-> u32{
+        self.id
     }
 
     fn handle_out_of_limit(&mut self) {
@@ -72,19 +77,23 @@ impl Asteroid {
 }
 
 pub struct Asteroids {
-    asteroids: Vec<Asteroid>
+    asteroids: Vec<Asteroid>,
+    counter : u32
 }
 
 impl Asteroids {
     pub fn new(asteroid_count: u32) -> Asteroids {
+
+        let mut counter = 0;
         let mut asteroids = Vec::new();
         for _ in 0..asteroid_count {
-            let asteroid = Asteroid::random();
+            let asteroid = Asteroid::random(counter);
             asteroids.push(asteroid);
+            counter+=1;
         };
-
         Asteroids {
-            asteroids
+            asteroids,
+            counter,
         }
     }
 
@@ -93,6 +102,7 @@ impl Asteroids {
             asteroid.update(dt);
         }
     }
+
 }
 
 impl AsRect for Asteroid {
