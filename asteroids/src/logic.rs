@@ -26,7 +26,8 @@ pub enum Turning {
 
 pub struct Asteroid {
     solid: CircleSolid,
-    id: u32
+    id: u32,
+    pub is_destroyed : bool
 }
 
 impl Asteroid {
@@ -45,7 +46,8 @@ impl Asteroid {
         let circle_solid = CircleSolid::new(position, velocity, r, limit);
         Asteroid {
             solid: circle_solid,
-            id
+            id,
+            is_destroyed : false
         }
     }
 
@@ -74,11 +76,14 @@ impl Asteroid {
             self.solid.pos.set_y(pos_y - 1.);
         }
     }
+
+    pub fn destroy(&mut self){
+        self.is_destroyed = true;
+    }
 }
 
 pub struct Asteroids {
-    asteroids: Vec<Asteroid>,
-    counter : u32
+    pub vec: Vec<Asteroid>
 }
 
 impl Asteroids {
@@ -92,17 +97,24 @@ impl Asteroids {
             counter+=1;
         };
         Asteroids {
-            asteroids,
-            counter,
+            vec: asteroids
         }
     }
 
     pub fn update(&mut self, dt: f32) {
-        for asteroid in &mut self.asteroids {
+        self.vec.retain(|asteroid|{!asteroid.is_destroyed});
+        for asteroid in &mut self.vec {
             asteroid.update(dt);
         }
     }
 
+    pub fn get_ids(&self) -> Vec<u32>{
+        let mut ids : Vec<u32> = Vec::new();
+        for asteroid in &self.vec{
+            ids.push(asteroid.id);
+        }
+        ids
+    }
 }
 
 impl AsRect for Asteroid {
@@ -116,7 +128,8 @@ impl AsRect for Asteroid {
 
 
 pub struct Bullet {
-    pub solid: CircleSolid
+    pub solid: CircleSolid,
+    pub is_destroyed : bool
 }
 
 impl Bullet {
@@ -126,11 +139,12 @@ impl Bullet {
         let limit = Rect::new(-1., -1., 3., 3.);
         let circle_solid = CircleSolid::new(position, velocity, BULLET_RADIUS, limit);
         Bullet {
-            solid: circle_solid
+            solid: circle_solid,
+            is_destroyed: false
         }
     }
 
-    pub fn is_out_of_limit(&self) -> bool {
+    pub fn is_in_limit(&self) -> bool {
         let x = self.solid.pos.x();
         let y = self.solid.pos.y();
         if x < 0. || x > 1. {
@@ -144,7 +158,15 @@ impl Bullet {
     }
 
     pub fn update(&mut self, dt: f32) {
+        if self.is_destroyed {
+            return
+        }
+
         self.solid.update(dt);
+    }
+
+    pub fn destroy(&mut self){
+        self.is_destroyed = true
     }
 }
 
@@ -164,7 +186,7 @@ pub struct Spaceship {
     pub firing: bool,
     firing_delay: f32,
     turning: Turning,
-    bullets: Vec<Bullet>,
+    pub bullets: Vec<Bullet>,
 }
 
 impl Spaceship {
@@ -258,7 +280,7 @@ impl Spaceship {
     }
 
     fn update_bullets(&mut self, dt: f32) {
-        self.bullets.retain(|bullet| { return bullet.is_out_of_limit(); });
+        self.bullets.retain(|bullet| { return bullet.is_in_limit() && !bullet.is_destroyed ; });
         for bullet in &mut self.bullets { bullet.update(dt); }
     }
 
@@ -293,7 +315,7 @@ impl AsRect for Spaceship {
 pub struct Logic {
     is_over: bool,
     pub spaceship: Spaceship,
-    asteroids: Asteroids,
+    pub asteroids: Asteroids,
 }
 
 impl Logic {
@@ -322,7 +344,4 @@ impl Logic {
         self.is_over
     }
 
-    pub fn asteroids(&self) -> &Vec<Asteroid> {
-        &self.asteroids.asteroids
-    }
 }

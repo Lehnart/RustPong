@@ -45,7 +45,7 @@ fn main() {
         }
 
         audio.update(&logic);
-        check_collision(&mut logic, dt, &audio);
+        check_collision(&mut logic);
 
         graphics.update(&logic, &window, &ttf_context);
         graphics.draw(&mut window);

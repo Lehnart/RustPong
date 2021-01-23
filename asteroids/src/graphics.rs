@@ -43,18 +43,18 @@ impl  Asteroid<'_> {
 }
 
 pub struct Asteroids<'a>{
-    asteroid_vec : Vec<Asteroid<'a>>
+    vec: Vec<Asteroid<'a>>
 }
 
 impl Asteroids<'_>{
     pub  fn new<'a> ()-> Asteroids<'a> {
          Asteroids {
-            asteroid_vec: Vec::new()
+            vec: Vec::new()
         }
     }
 
     pub fn is_existing(&self, logic_id : u32) -> bool {
-        for asteroid in &self.asteroid_vec{
+        for asteroid in &self.vec {
             if logic_id == asteroid.logic_id{
                 return true
             }
@@ -64,11 +64,11 @@ impl Asteroids<'_>{
 
     pub fn create(&mut self, logic_id : u32) {
         let asteroid = Asteroid::new(logic_id);
-        self.asteroid_vec.push(asteroid);
+        self.vec.push(asteroid);
     }
 
     pub fn update(&mut self, logic_id : u32, logic_rect : geometry::Rect, w : u32, h : u32){
-        for asteroid in &mut self.asteroid_vec{
+        for asteroid in &mut self.vec {
             if logic_id == asteroid.logic_id{
                 asteroid.sprite.update(logic_rect, 0., w, h);
                 return
@@ -77,7 +77,7 @@ impl Asteroids<'_>{
     }
 
     pub fn draw(&self, canvas : &mut WindowCanvas){
-        for asteroid in &self.asteroid_vec {
+        for asteroid in &self.vec {
             asteroid.sprite.draw(canvas);
         }
     }
@@ -161,7 +161,10 @@ impl Graphics<'_> {
         let h = window.height();
         self.spaceship.update(&logic.spaceship, w, h);
 
-        for logic_asteroid in logic.asteroids() {
+        let ids = logic.asteroids.get_ids();
+        self.asteroids.vec.retain(|asteroid|{ids.contains(&asteroid.logic_id)});
+
+        for logic_asteroid in &logic.asteroids.vec {
             let id = logic_asteroid.get_id();
 
             if !self.asteroids.is_existing(id){
